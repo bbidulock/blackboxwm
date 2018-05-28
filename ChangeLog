@@ -1,4 +1,235 @@
-# created with git log --stat=76 -M -C -200|fmt -sct -w80
+# created with git log --stat=76 -M -C -500|fmt -sct -w80
+
+commit 5d69e1fd4c08bb8992571ecebee6bf7b0df2928f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 28 01:00:17 2018 -0600
+
+    prctl is linux-specific
+
+ src/blackbox.cc | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit 0c754b223b516a8badc476bddcb315bea2f887d4
+Merge: 7bbdb10 02343b1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 28 00:28:51 2018 -0600
+
+    Merge branch 'master' of github.com:bbidulock/blackboxwm
+
+commit 7bbdb10db5850bc72aee59e53dda9b5139533065
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 28 00:28:06 2018 -0600
+
+    become child subreaper and session leader
+
+ src/blackbox.cc | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+commit 02343b17d9138e6ce53ef8f6869a690ce6707eaf
+Merge: 47fd5a1 0d81de8
+Author: Brian Bidulock <bidulock@openss7.com>
+Date:   Sat Nov 18 23:30:21 2017 -0700
+
+    Merge pull request #13 from psolyca/master
+
+    Add errno.h as include
+
+commit 0d81de837ad89782c48620e23daf01d42de7b653
+Author: Damien Gaignon <damien.gaignon@gmail.com>
+Date:   Thu Nov 16 21:57:19 2017 +0100
+
+    Add errno.h as include
+
+    Add errno.h as include in lib/Application.cc to avoid building error.
+
+ lib/Application.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 47fd5a1484e23b9c45b4c9c2d72cff44293e4306
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 23 13:47:26 2017 -0600
+
+    update po files
+
+ po/blackbox.pot | 10 +++++-----
+ po/da.po        | 10 +++++-----
+ po/de.po        | 10 +++++-----
+ po/es.po        | 10 +++++-----
+ po/es_AR.po     | 10 +++++-----
+ po/et.po        | 10 +++++-----
+ po/fr.po        | 10 +++++-----
+ po/hu.po        | 10 +++++-----
+ po/it.po        | 10 +++++-----
+ po/ja.po        | 10 +++++-----
+ po/ko.po        | 10 +++++-----
+ po/lv.po        | 10 +++++-----
+ po/nl.po        | 10 +++++-----
+ po/no.po        | 10 +++++-----
+ po/pl.po        | 10 +++++-----
+ po/pt_BR.po     | 10 +++++-----
+ po/ro.po        | 10 +++++-----
+ po/ru.po        | 10 +++++-----
+ po/sk.po        | 10 +++++-----
+ po/sl.po        | 10 +++++-----
+ po/sv.po        | 10 +++++-----
+ po/tr.po        | 10 +++++-----
+ po/uk.po        | 10 +++++-----
+ po/zh_CN.po     | 10 +++++-----
+ po/zh_TW.po     | 10 +++++-----
+ 25 files changed, 125 insertions(+), 125 deletions(-)
+
+commit c1256830710d76b6374b83e4e1812037b27535d5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 23 13:47:16 2017 -0600
+
+    initialize XKEYBOARD
+
+ lib/Application.cc | 17 ++++++++++++++---
+ lib/Application.hh |  4 +++-
+ 2 files changed, 17 insertions(+), 4 deletions(-)
+
+commit 85ed2da503d30986996bf5e6d5143f810ab0a86f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 23 13:46:10 2017 -0600
+
+    update install file
+
+ INSTALL | 320 ++++++++++++++++++++++++++++++------------------------------
+ 1 file changed, 159 insertions(+), 161 deletions(-)
+
+commit dea6996568c26da96d29af5037c000cb72959020
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 23 13:32:43 2017 -0600
+
+    better build
+
+ Makefile.am  | 30 +++++++++++++++---------------
+ configure.ac |  3 ++-
+ configure.sh |  1 +
+ dist.sh      |  2 +-
+ rebuild.sh   |  4 +++-
+ 5 files changed, 22 insertions(+), 18 deletions(-)
+
+commit be0557a97c63174a0f6d6c015daad38faf4638aa
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 23 13:31:40 2017 -0600
+
+    add some ignores
+
+ .gitignore | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+commit b6dbed109327c141c7cbfbea441718d7fda6ddb6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Sep 11 03:30:30 2017 +0000
+
+    tweaks
+
+ README       | 105 +++++++++++++++++++++++++++++------------------------
+ README.md    | 105 +++++++++++++++++++++++++++++------------------------
+ README.md.in | 109 ++++++++++++++++++++++++++++++-------------------------
+ 3 files changed, 176 insertions(+), 143 deletions(-)
+
+commit 3da5fb03623899b8746f238d541464de782e9eb1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 19:12:22 2017 -0600
+
+    silent now default
+
+ rebuild.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit eeadb4afd7fd17433302bda97c50dbe3cd1f57ba
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 19:12:01 2017 -0600
+
+    update make flags
+
+ configure.sh | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+commit 86533dd0d4c4adb40d4922c52e3fb93bb3a91628
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 19:11:43 2017 -0600
+
+    add more checks
+
+ configure.ac | 43 +++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 41 insertions(+), 2 deletions(-)
+
+commit 648e88f98b1bc5431efcafbdc8bb2da16cdd1b62
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 10 19:11:13 2017 -0600
+
+    add branch to substitution
+
+ autogen.sh | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+commit 3e4d3d593b9231d2dc0cd7149c67b9dbbe76e484
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Sep 9 20:26:48 2017 -0600
+
+    silent rules with /usr prefix
+
+ configure.ac | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit 305ae39479e4f54d385b6d8dd0425f86250eaa5f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Sep 9 20:08:00 2017 -0600
+
+    zero errno when not using it
+
+ lib/Application.cc | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+commit 8c9e2af7d34ea076f684ce47d8e4f0268b054c71
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 10:31:38 2016 -0600
+
+    update .po files
+
+ po/blackbox.pot | 4 ++--
+ po/da.po        | 2 +-
+ po/de.po        | 2 +-
+ po/es.po        | 2 +-
+ po/es_AR.po     | 2 +-
+ po/et.po        | 2 +-
+ po/fr.po        | 2 +-
+ po/hu.po        | 2 +-
+ po/it.po        | 2 +-
+ po/ja.po        | 2 +-
+ po/ko.po        | 2 +-
+ po/lv.po        | 2 +-
+ po/nl.po        | 2 +-
+ po/no.po        | 2 +-
+ po/pl.po        | 2 +-
+ po/pt_BR.po     | 2 +-
+ po/ro.po        | 2 +-
+ po/ru.po        | 2 +-
+ po/sk.po        | 2 +-
+ po/sl.po        | 2 +-
+ po/sv.po        | 2 +-
+ po/tr.po        | 2 +-
+ po/uk.po        | 2 +-
+ po/zh_CN.po     | 2 +-
+ po/zh_TW.po     | 2 +-
+ 25 files changed, 26 insertions(+), 26 deletions(-)
+
+commit 09d3fe36bbcb76187ae1e1dbf2d53cdf980536b5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 10:29:51 2016 -0600
+
+    update release files
+
+ AUTHORS      |  2 +-
+ ChangeLog    | 83 ++++++++++++++++++++++++++++++++++++++++----------------
+ NEWS         | 21 +++++++-------
+ README       |  6 ++--
+ README.md    |  6 ++--
+ configure.ac |  6 ++--
+ 6 files changed, 80 insertions(+), 44 deletions(-)
 
 commit c5ad18bff4e5083c2ea593fe76fe7c32e4568420
 Author: Brian Bidulock <bidulock@openss7.org>
@@ -4886,3 +5117,3545 @@ Date:   Mon Jan 24 09:30:03 2005 +0000
 
  src/Window.cc | 56 ++++++++++++++++++++++---------------------------------
  1 file changed, 22 insertions(+), 34 deletions(-)
+
+commit 34e360b3121abaaad08f118263a1a3ab5f497232
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 24 09:06:10 2005 +0000
+
+    updateSize() and updateGeometry() can't be reimplemented, make them
+    private non-virtual functions
+
+    vanR has bugged me long enough, so I give up, give him a geometry()
+    function.
+
+ lib/Menu.cc | 7 +++++++
+ lib/Menu.hh | 8 +++++---
+ 2 files changed, 12 insertions(+), 3 deletions(-)
+
+commit 2ec2a996d0cd47866dc704732f64eb1526e0b11d
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 24 07:50:56 2005 +0000
+
+    add _NET_WM_STATE_DEMANDS_ATTENTION
+
+ lib/EWMH.cc | 1 +
+ lib/EWMH.hh | 3 +++
+ 2 files changed, 4 insertions(+)
+
+commit 61d7aeb1c88f314ee4cac653111bafbadadc3a01
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jan 21 10:53:21 2005 +0000
+
+    Many docks have auto-hide features similar to the toolbar and
+    slit... we don't want these things to be moved to the center of the
+    screen when switching to an empty workspace.
+
+ src/Window.cc | 25 +++++++++++++++++++------
+ 1 file changed, 19 insertions(+), 6 deletions(-)
+
+commit b8a3b547d415e63df24c9be6337c71566e492cf4
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 20 16:57:42 2005 +0000
+
+    fix bug 1105234: 'shaded' state lost after style change:
+
+    When having shaded windows (right click -> shade) and changing the
+    style, the window's height goes to zero, while the window is not
+    shaded anymore.
+
+ src/Window.cc | 33 ++++++++++++++++++++++-----------
+ 1 file changed, 22 insertions(+), 11 deletions(-)
+
+commit 400fb352a0b5e049e824c39655cbfc186412f083
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 20 13:35:33 2005 +0000
+
+    make sure we add/remove the group transients from the group when the
+    group (potentially) changes. fixes bug 1105814
+
+    http://sourceforge.net/tracker/index.php?func=detail&aid=1105814&group_id=40696&atid=428680
+
+ src/Window.cc | 27 ++++++++++++++++++++-------
+ 1 file changed, 20 insertions(+), 7 deletions(-)
+
+commit ca8eb452a3345a6d35e71a4d920704d81683d16f
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 20 13:30:07 2005 +0000
+
+    update COMPLIANCE and EWMH atom list to those listed in the 1.3 draft
+
+ COMPLIANCE  |  8 +++++++-
+ lib/EWMH.cc | 12 ++++++++----
+ lib/EWMH.hh | 33 +++++++++++++++++++++++----------
+ 3 files changed, 38 insertions(+), 15 deletions(-)
+
+commit 23b2ebc4c599b8c02007b610828e200255d0278d
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 20 13:11:15 2005 +0000
+
+    setup libtool correctly
+
+ Makefile.am  | 4 ++++
+ configure.ac | 1 +
+ 2 files changed, 5 insertions(+)
+
+commit ee6446473f202da528ddddfcccbab6f19116370d
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 20 10:12:21 2005 +0000
+
+    use AM_CPPFLAGS instead of CPPFLAGS
+
+ lib/Makefile.am | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 45a210591ccc15705cc7cf65fdb321bb19714761
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Jan 19 14:30:46 2005 +0000
+
+    get the CPPFLAGS and LDFLAGS right
+
+ configure.ac | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit afb3981b797d68790f47417a851bcbce7f5b7959
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Jan 19 14:20:56 2005 +0000
+
+    update changelog and add release notes
+
+ ChangeLog | 37 ++++++++++++++++++++++++++++++-------
+ RELNOTES  | 38 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 68 insertions(+), 7 deletions(-)
+
+commit 1aff87c896dc9c2f256c7990e8070d5aef1ebe2f
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Jan 19 14:15:31 2005 +0000
+
+    remove unneeded assert
+
+ src/ScreenResource.cc | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit bc2a50bad9cb6f456c1b22f61314c53ba3af21cd
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Jan 19 13:53:00 2005 +0000
+
+    Add code to automatically convert 0.65.0 ~/.blackboxrc to 0.70.0
+    format
+
+ TODO                    |  3 --
+ src/BlackboxResource.cc | 71 ++++++++++++++++++++++++++++++++++-----------
+ 2 files changed, 54 insertions(+), 20 deletions(-)
+
+commit 1bbfcacf9de0378c1d959b7ec12f3ef59bb4e914
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Jan 19 12:41:06 2005 +0000
+
+    updates
+
+ TODO | 28 +++++++++++-----------------
+ 1 file changed, 11 insertions(+), 17 deletions(-)
+
+commit 1dbbc33138547ca8b8d0787d17e60275dc341212
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Jan 19 11:36:49 2005 +0000
+
+    lay down the foundation for tear-off menu support... does nothing yet,
+    but for binary compatibility reasons, it's best to do it now
+
+ lib/Menu.cc | 16 ++++++++++++++--
+ lib/Menu.hh |  3 +++
+ 2 files changed, 17 insertions(+), 2 deletions(-)
+
+commit e8b1ea4edc1ad070067dab93f443483b4df544c5
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Jan 19 09:17:05 2005 +0000
+
+    minor usability fix... the the mouse moves over the title, fake a
+    leave event, so that any active items are deactivated (unless the
+    active menu has an open submenu, that is)
+
+ lib/Menu.cc | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+commit b6eff8961ea95ce9b40304aabb5aae09d6171d4a
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jan 18 20:37:02 2005 +0000
+
+    use .ForegroundColor instead of .Foreground, as documented :)
+
+ src/ScreenResource.cc | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+commit f2d2cbaa0dc7fdd0c9d1931f03ecd0c76d3a6764
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jan 18 20:30:03 2005 +0000
+
+    documentation updates
+
+ data/README       |  53 ++----
+ data/README.menu  | 512 +++++++++++++++++++++++++-------------------------
+ data/README.style | 384 +++++--------------------------------
+ 3 files changed, 328 insertions(+), 621 deletions(-)
+
+commit 83dbb6d9ad8a5f5036b55a26e1ddda39ef4b849f
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jan 18 19:12:02 2005 +0000
+
+    fix typo in rant/comment
+
+ src/Window.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 92ae4d97989489f7b925199eabd483866e6c0c61
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jan 18 15:39:35 2005 +0000
+
+    run aclocal before everyting else to silence warnings from libtoolize
+
+ mk.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 0d65abac228b84afa36d977926e80ed6c6e2809f
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jan 18 13:31:35 2005 +0000
+
+    1. the default window functions should be set to those that cannot be
+    changed through _MOTIF_WM_HINTS
+
+    2. fix logic in double-click shade, so that we don't try to shade if
+    the window does not have WindowFunctionShade
+
+    this fixes tracker bug 1100927
+
+ src/Window.cc | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+commit d447948e2b9a6246dd5119f0e9f3da70f5f597a8
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jan 18 12:13:53 2005 +0000
+
+    support windows that set _NET_WM_STATE_{ABOVE,BELOW} by putting them in
+    the right layer
+
+ src/Window.cc | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+commit dc785d72588c5a715bfb2bad9a66113526d3e61a
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jan 18 08:24:43 2005 +0000
+
+    1. always raise newly managed windows so that we can enforce our
+    stacking order
+
+    2. fix raising of fullscreen windows with transients... fixes tracker
+    bug 1101665
+
+ src/Screen.cc | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
+
+commit a1fa7e700be36973dce01acbe71b729ce6667357
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jan 18 08:18:47 2005 +0000
+
+    print out the entity/win pointer in addition to window ids
+
+ src/StackingList.cc | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+commit b7b03e0a189133faa14d9abbe6592d2c68875289
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jan 14 15:46:14 2005 +0000
+
+    for some reason, xv and GNU emacs like to set WM_NORMAL_HINTS in
+    response to a synthetic ConfigureNotify... this puts blackbox and
+    xv/emacs into a infinite loop, constantly sending ConfigureNotify and
+    setting WM_NORMAL_HINTS... let's put a stop to it
+
+ src/Window.cc | 54 ++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 52 insertions(+), 2 deletions(-)
+
+commit 913a5d589f6e9f5575a7d37ec2c1cdfe8c7ded8a
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 13 13:57:22 2005 +0000
+
+    fix findNonTransientParent():
+
+    - return 0 if the window is not a transient
+
+    - don't return the first repeated window in a circular transient
+    chain.  for example, given 3->2->1->3, then
+    2->findNonTransientParent() should return 3, not 2
+
+ src/Window.cc | 23 ++++++++++++++---------
+ 1 file changed, 14 insertions(+), 9 deletions(-)
+
+commit 1bad180be468bd3b395ef83cd8f4aacbe0f5b37b
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 13 13:53:46 2005 +0000
+
+    fix raising/lowering of group transients
+
+ src/Screen.cc | 45 +++++++++++++++++++++++++--------------------
+ 1 file changed, 25 insertions(+), 20 deletions(-)
+
+commit b8943138989347c917ea641df2701a7555bc1cfa
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 13 13:09:09 2005 +0000
+
+    windows who set WM_TRANSIENT_FOR to something that is not a group or
+    another managed windows are simply broken, such windows should not be
+    treated as transients
+
+ src/Window.cc | 3 +++
+ 1 file changed, 3 insertions(+)
+
+commit 3e9701a43305204ae7fbca126c5cbea2c86b297f
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 13 12:01:59 2005 +0000
+
+    raiseWindow() shouldn't call findNonTransientParent() on non-transient
+    windows
+
+ src/Screen.cc | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+commit 47ffaafa07a52471a039da49fee2c9ead9d9250f
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 13 10:19:38 2005 +0000
+
+    during shutdown, preserve the stacking order after unmanaging all windows
+
+ src/Screen.cc | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+commit 4b8c4d164f180d9d81166cc019f3cd75de066840
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 13 09:58:11 2005 +0000
+
+    large windows should be centered in the available area, not the entire
+    screen
+
+ src/Screen.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 14cbb3e1803db41ae5760dbe38f8699721864700
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 13 09:26:26 2005 +0000
+
+    consistency
+
+ src/Window.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 779e06ddd77736b461e0efcb250cd8ced539f97e
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 13 09:20:53 2005 +0000
+
+    rename buildTransientList(win) to BlackboxWindow::buildFullTransientList()
+
+ src/Screen.cc | 24 +++---------------------
+ src/Window.cc | 16 ++++++++++++++++
+ src/Window.hh |  1 +
+ 3 files changed, 20 insertions(+), 21 deletions(-)
+
+commit 2b601495d11f97e8d74213c62ab8cd97b7dd64a8
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jan 11 07:18:04 2005 +0000
+
+    - fix assert... std::find(end, end, ...) will always return end!
+
+    - when recursing into lowerWindow(), we don't need to redo to group
+    lowering
+
+ src/Screen.cc | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
+
+commit 2309e666256316a19569d25ed76642d817186a23
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jan 11 07:07:16 2005 +0000
+
+    - document what the return values for raiseWindow() and lowerWindow() mean
+
+    - fix lowerWindow() to allow for independent top-level lowering in the
+    group... having lowerWindow() simply lower the group is not enough,
+    especially if you have, for example, multiple browser windows open in
+    the same group.
+
+ src/Screen.cc | 87 ++++++++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 58 insertions(+), 29 deletions(-)
+
+commit d0072a1016b57530c35cead81450460153a31a8c
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 10 16:45:28 2005 +0000
+
+    rework lowering after the recent changes to the raising
+    code... lowering is less complicated than raise.  when lowering we do
+    one of the following:
+
+    1. if the window is in a group, we lower the entire group in the
+    current stacking order
+
+    2. otherwise, if the window has transients, we lower the window and
+    all of its transients in the current stacking order
+
+    3. otherwise, we simply lower the single window
+
+    this differs slightly from raise, which first works on the
+    group/transient-tree and then raises the target window in the
+    group/transient-tree... lower doesn't act on the target window, it
+    merely does the action on the group/transient-tree
+
+ src/Screen.cc | 246 ++++++++++++++++++++++++++++++++----------------------
+ src/Screen.hh |   4 -
+ 2 files changed, 148 insertions(+), 102 deletions(-)
+
+commit 0a8a472df28895a0c85b0b96b91626265e831e1b
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 10 16:08:18 2005 +0000
+
+    don't focus _NET_WM_WINDOW_TYPE_DOCK windows, ever
+
+ src/Window.cc | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+commit 8925193892289cdc5bf092c0a3b956d4f0245bcc
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 10 15:09:41 2005 +0000
+
+    compile on linux
+
+ src/ScreenResource.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit e502f045e09942e06b22a6a25810275c3cd24968
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 10 15:07:51 2005 +0000
+
+    optimize StackingList::lower(), and add comments in raise()/lower()
+
+ src/StackingList.cc | 39 +++++++++++++++++++++++++--------------
+ 1 file changed, 25 insertions(+), 14 deletions(-)
+
+commit 5d69eeb9b48debb525be2c2b262133738238b9b8
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 10 14:50:13 2005 +0000
+
+    since transients are kept on the same workspace as their parents,
+    there's no reason to check if a transient is on the same workspace
+    when raising...
+
+    as a side effect, when raising a group, all windows on all workspaces
+    will be raised... i'm not sure if this is going to cause problems, but
+    i suspect not... i am even considering keeping all windows in a group
+    on the same workspace
+
+ src/Screen.cc | 42 +++++++++++++-----------------------------
+ 1 file changed, 13 insertions(+), 29 deletions(-)
+
+commit 87cb36a8bb3ba3aab95e03e617cf2c5276b0e47a
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 10 14:40:21 2005 +0000
+
+    optimize StackingList::raise()
+
+ src/StackingList.cc | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+commit 88d9b5a384545ff6c19ab844a8181dad0d4959af
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 10 14:36:15 2005 +0000
+
+    remove debug output
+
+ src/ScreenResource.cc | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit 0a8fc2f913f2f72d099f058ca81f54444bf9ef36
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 10 14:23:12 2005 +0000
+
+    better defaults when starting blackbox for the first time
+
+ src/BlackboxResource.cc | 10 +++++-----
+ src/ScreenResource.cc   |  8 ++++----
+ 2 files changed, 9 insertions(+), 9 deletions(-)
+
+commit 123c45f60d9d3af153097fcd835b81797babebca
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 10 14:05:16 2005 +0000
+
+    Results is not the default style anymore
+
+ src/Makefile.am | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 1b538991de9b1401abfff43b0c59d9777dd1eb72
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 10 13:32:23 2005 +0000
+
+    god, stl is wierd
+
+ src/ScreenResource.cc | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+commit 91475c7db12ba77f8205f0d4875244c12108d4d6
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 10 11:45:56 2005 +0000
+
+    part 1 of a larger change to the way windows are stacked... when
+    raising windows, let's be super clever:
+
+    - transients are stacked independently from other sibling transients
+
+    - similarly, group transients (and their transients) are stacked
+    independently
+
+    - when raising a window that is part of a group, first raise the
+    entire group (preserving the current stacking order) before raising
+    the original window.
+
+    - in general, the stacking order is preserved unless explicitly
+    changed... this results in a very good feel, especially for SDI style
+    applications.
+
+    note: lowering is not yet done this way...
+
+ src/Screen.cc | 383 ++++++++++++++++++++++++++++++++++++------------------
+ src/Screen.hh |   1 -
+ 2 files changed, 255 insertions(+), 129 deletions(-)
+
+commit 602d8ec0b868c9b22b47301421a408724a6db77f
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 10 09:30:44 2005 +0000
+
+    updates
+
+ TODO | 6 ------
+ 1 file changed, 6 deletions(-)
+
+commit 95abc4f6c9b2878f4c918082df8e5a22edfce2d8
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 10 09:25:39 2005 +0000
+
+    make StackingList::raise() and ::lower() return an iterator to the
+    entity at its new position in the stack
+
+ src/StackingList.cc | 14 +++++++-------
+ src/StackingList.hh |  8 ++++----
+ 2 files changed, 11 insertions(+), 11 deletions(-)
+
+commit f435c17b2127b7d89ce528e566914ac7b511d1a4
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 6 07:48:51 2005 +0000
+
+    BWindowGroup::removeWindow() could delete the group, so make sure we
+    call removeTransient() before removeWindow()
+
+ src/Window.cc | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+commit 95961b0122af1ae518ab9adab68bcdda56d7bfac
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 6 07:47:54 2005 +0000
+
+    the transientList must be empty before destroying the group
+
+ src/WindowGroup.cc | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+commit 41b309c49382e3378ca5e620e538b1c162bf7bda
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Jan 5 08:18:44 2005 +0000
+
+    cleanup BlackboxResource and ScreenResource more... ScreenResource now
+    lives in its own file...
+
+    moved the call to XrmInitialize() to bt::Application's constructor,
+    this is a more logical location
+
+ lib/Application.cc                             |   2 +
+ src/BlackboxResource.cc                        | 529 +--------------------
+ src/BlackboxResource.hh                        | 129 +----
+ src/Makefile.am                                |   1 +
+ src/Screen.cc                                  |   8 +-
+ src/{BlackboxResource.cc => ScreenResource.cc} | 308 +-----------
+ src/ScreenResource.hh                          | 129 +++++
+ src/Toolbar.cc                                 |   4 +-
+ src/Window.cc                                  |  16 +-
+ src/Windowmenu.cc                              |   2 +-
+ src/Workspace.cc                               |   8 +-
+ src/Workspace.hh                               |   2 +-
+ src/Workspacemenu.cc                           |   4 +-
+ 13 files changed, 200 insertions(+), 942 deletions(-)
+
+commit 88d9fde5279088b693c8ebf23b112dbea1e1bc1d
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jan 4 12:58:32 2005 +0000
+
+    1. make the "Disable bindings with scroll lock" resource application
+    wide, not per-screen
+
+    2. refactor ScreenResource a bit, use references instead of pointers,
+    and encapsulate data appropriately
+
+ src/BlackboxResource.cc | 305 +++++++++++++++++++++---------------------
+ src/BlackboxResource.hh | 168 +++++++++++------------
+ src/Configmenu.cc       |  16 +--
+ src/Screen.cc           |  40 +++---
+ src/Slit.cc             | 112 +++++++++-------
+ src/Slit.hh             |  14 +-
+ src/Slitmenu.cc         |  64 +++++----
+ src/Toolbar.cc          | 271 +++++++++++++++++++------------------
+ src/Toolbar.hh          |   5 +-
+ src/Toolbarmenu.cc      |  53 +++++---
+ src/Window.cc           | 317 ++++++++++++++++++++++++--------------------
+ src/Window.hh           |   2 -
+ 12 files changed, 702 insertions(+), 665 deletions(-)
+
+commit 718d20b477443b70acd12cc74c4fd95915c52199
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jan 4 09:51:06 2005 +0000
+
+    don't clear the ChangeLayer function when going fullscreen, we rely on
+    it quite a bit, especially in fullscreen mode
+
+ src/Window.cc | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+commit f8459d8fcda52b763f16920a21b6aaba35093b90
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 3 14:51:34 2005 +0000
+
+    changeLayer should work when going to fullscreen mode
+
+ src/Window.cc | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+commit b63cc8d980470c0d735f3c4afe30c8398d445530
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 3 14:37:44 2005 +0000
+
+    managed windows may also be group leaders, in which case transients of
+    such windows should be put into the managed window's transient list
+    (not into the group transient list).
+
+    this should fix bug 1068894
+
+ src/Window.cc      | 55 ++++++++++++++++++++++++++------------------------
+ src/WindowGroup.cc | 28 +++++++++++++++----------
+ 2 files changed, 46 insertions(+), 37 deletions(-)
+
+commit eafad70a488c72849c88a8723cf431d1f50f8b89
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 3 09:42:37 2005 +0000
+
+    copyright year update
+
+ ChangeLog.bsetbg        |  2 +-
+ LICENSE                 |  4 ++--
+ lib/Application.cc      |  4 ++--
+ lib/Application.hh      |  4 ++--
+ lib/Bitmap.cc           |  4 ++--
+ lib/Bitmap.hh           |  4 ++--
+ lib/Color.cc            |  4 ++--
+ lib/Color.hh            |  4 ++--
+ lib/Display.cc          |  4 ++--
+ lib/Display.hh          |  4 ++--
+ lib/EWMH.cc             |  4 ++--
+ lib/EWMH.hh             |  4 ++--
+ lib/EventHandler.hh     |  4 ++--
+ lib/Font.cc             |  4 ++--
+ lib/Font.hh             |  4 ++--
+ lib/Image.cc            |  4 ++--
+ lib/Image.hh            |  4 ++--
+ lib/Makefile.am         |  4 ++--
+ lib/Menu.cc             |  4 ++--
+ lib/Menu.hh             |  4 ++--
+ lib/Pen.cc              |  4 ++--
+ lib/Pen.hh              |  4 ++--
+ lib/PixmapCache.cc      |  4 ++--
+ lib/PixmapCache.hh      |  4 ++--
+ lib/Rect.cc             |  4 ++--
+ lib/Rect.hh             |  4 ++--
+ lib/Resource.cc         |  4 ++--
+ lib/Resource.hh         |  4 ++--
+ lib/Texture.cc          |  4 ++--
+ lib/Texture.hh          |  4 ++--
+ lib/Timer.cc            |  4 ++--
+ lib/Timer.hh            |  4 ++--
+ lib/Unicode.cc          |  4 ++--
+ lib/Unicode.hh          |  4 ++--
+ lib/Util.cc             |  4 ++--
+ lib/Util.hh             |  4 ++--
+ src/BlackboxResource.cc |  4 ++--
+ src/BlackboxResource.hh |  4 ++--
+ src/Clientmenu.cc       |  4 ++--
+ src/Clientmenu.hh       |  4 ++--
+ src/Configmenu.cc       |  4 ++--
+ src/Configmenu.hh       |  4 ++--
+ src/Iconmenu.cc         |  4 ++--
+ src/Iconmenu.hh         |  4 ++--
+ src/Makefile.am         |  4 ++--
+ src/Rootmenu.cc         |  4 ++--
+ src/Rootmenu.hh         |  4 ++--
+ src/Screen.cc           |  4 ++--
+ src/Screen.hh           |  4 ++--
+ src/Slit.cc             |  4 ++--
+ src/Slit.hh             |  4 ++--
+ src/Slitmenu.cc         |  4 ++--
+ src/Slitmenu.hh         |  4 ++--
+ src/StackingList.cc     |  4 ++--
+ src/StackingList.hh     |  4 ++--
+ src/Toolbar.cc          |  4 ++--
+ src/Toolbar.hh          |  4 ++--
+ src/Toolbarmenu.cc      |  4 ++--
+ src/Toolbarmenu.hh      |  4 ++--
+ src/Window.cc           |  4 ++--
+ src/Window.hh           |  4 ++--
+ src/WindowGroup.cc      |  4 ++--
+ src/WindowGroup.hh      |  4 ++--
+ src/Windowmenu.cc       |  4 ++--
+ src/Windowmenu.hh       |  4 ++--
+ src/Workspace.cc        |  4 ++--
+ src/Workspace.hh        |  4 ++--
+ src/Workspacemenu.cc    |  4 ++--
+ src/Workspacemenu.hh    |  4 ++--
+ src/blackbox.cc         |  4 ++--
+ src/blackbox.hh         |  4 ++--
+ src/main.cc             | 12 ++++++------
+ util/Makefile.am        |  4 ++--
+ util/bsetroot.cc        |  8 ++++----
+ util/bsetroot.hh        |  4 ++--
+ util/bstyleconvert.cc   |  4 ++--
+ 76 files changed, 157 insertions(+), 157 deletions(-)
+
+commit 8941f69115f1dc1a7b4993c06e42afe042b19240
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Dec 29 20:16:20 2004 +0000
+
+    copyright year update
+
+ LICENSE                 |  4 ++--
+ lib/Application.cc      |  4 ++--
+ lib/Application.hh      |  4 ++--
+ lib/Bitmap.cc           |  4 ++--
+ lib/Bitmap.hh           |  4 ++--
+ lib/Color.cc            |  4 ++--
+ lib/Color.hh            |  4 ++--
+ lib/Display.cc          |  4 ++--
+ lib/Display.hh          |  4 ++--
+ lib/EWMH.cc             |  4 ++--
+ lib/EWMH.hh             |  4 ++--
+ lib/EventHandler.hh     |  4 ++--
+ lib/Font.cc             |  4 ++--
+ lib/Font.hh             |  4 ++--
+ lib/Image.cc            |  4 ++--
+ lib/Image.hh            |  4 ++--
+ lib/Makefile.am         |  4 ++--
+ lib/Menu.cc             |  4 ++--
+ lib/Menu.hh             |  4 ++--
+ lib/Pen.cc              |  4 ++--
+ lib/Pen.hh              |  4 ++--
+ lib/PixmapCache.cc      |  4 ++--
+ lib/PixmapCache.hh      |  4 ++--
+ lib/Rect.cc             |  4 ++--
+ lib/Rect.hh             |  4 ++--
+ lib/Resource.cc         |  4 ++--
+ lib/Resource.hh         |  4 ++--
+ lib/Texture.cc          |  4 ++--
+ lib/Texture.hh          |  4 ++--
+ lib/Timer.cc            |  4 ++--
+ lib/Timer.hh            |  4 ++--
+ lib/Unicode.cc          |  2 +-
+ lib/Unicode.hh          |  2 +-
+ lib/Util.cc             |  4 ++--
+ lib/Util.hh             |  4 ++--
+ nls/lv_LV/Toolbar.m     |  2 +-
+ nls/pt_BR/common.m      |  2 +-
+ src/BlackboxResource.cc |  4 ++--
+ src/BlackboxResource.hh |  4 ++--
+ src/Clientmenu.cc       |  4 ++--
+ src/Clientmenu.hh       |  4 ++--
+ src/Configmenu.cc       |  4 ++--
+ src/Configmenu.hh       |  4 ++--
+ src/Iconmenu.cc         |  4 ++--
+ src/Iconmenu.hh         |  4 ++--
+ src/Makefile.am         |  5 ++---
+ src/Rootmenu.cc         |  4 ++--
+ src/Rootmenu.hh         |  4 ++--
+ src/Screen.hh           |  4 ++--
+ src/Slit.cc             |  4 ++--
+ src/Slit.hh             |  4 ++--
+ src/Slitmenu.cc         |  4 ++--
+ src/Slitmenu.hh         |  4 ++--
+ src/StackingList.cc     |  4 ++--
+ src/StackingList.hh     |  4 ++--
+ src/Toolbar.cc          |  4 ++--
+ src/Toolbar.hh          |  4 ++--
+ src/Toolbarmenu.cc      |  4 ++--
+ src/Toolbarmenu.hh      |  4 ++--
+ src/Window.hh           |  4 ++--
+ src/WindowGroup.cc      |  4 ++--
+ src/WindowGroup.hh      |  4 ++--
+ src/Windowmenu.cc       |  4 ++--
+ src/Windowmenu.hh       |  4 ++--
+ src/Workspace.cc        |  4 ++--
+ src/Workspace.hh        |  4 ++--
+ src/Workspacemenu.cc    |  4 ++--
+ src/Workspacemenu.hh    |  4 ++--
+ src/blackbox.cc         |  4 ++--
+ src/blackbox.hh         |  4 ++--
+ src/main.cc             | 12 ++++++------
+ util/Makefile.am        |  4 ++--
+ util/bsetroot.cc        |  8 ++++----
+ util/bsetroot.hh        |  4 ++--
+ util/bstyleconvert.cc   |  4 ++--
+ 75 files changed, 152 insertions(+), 153 deletions(-)
+
+commit 22effcbfb80052de8e41057db181d8c2abb87372
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Dec 29 19:43:19 2004 +0000
+
+    make changeLayer() work on all transients, similar to iconify(),
+    changeWorkspace(), etc.
+
+ src/Screen.cc        | 95 +++++++++++++++++++++++-------------------------
+ src/Screen.hh        |  7 ++--
+ src/Slitmenu.cc      |  8 ++--
+ src/Toolbarmenu.cc   |  8 ++--
+ src/Window.cc        | 63 ++++++++++++++++++++++----------
+ src/Window.hh        |  2 +
+ src/Windowmenu.cc    | 16 ++++----
+ src/Workspacemenu.cc |  2 +-
+ 8 files changed, 114 insertions(+), 87 deletions(-)
+
+commit 9d906b21c30e11092e790602047cd0e3d6769aec
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Dec 29 19:40:49 2004 +0000
+
+    this is 0.70.0cvs, not beta2
+
+ configure.ac | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit a056baaa97dfc3698ff006d1c8c55cad2b3c547c
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Dec 28 23:31:43 2004 +0000
+
+    make sure that transients automatically inherit their parents'
+    workspace, no matter if the user or the client changes it.
+
+ src/Clientmenu.cc |  2 +-
+ src/Screen.cc     | 16 -----------
+ src/Screen.hh     |  1 -
+ src/Window.cc     | 80 ++++++++++++++++++++++++++++++++++++++++++---------
+ src/Window.hh     |  9 +++++-
+ src/Windowmenu.cc | 36 +++++++++--------------
+ 6 files changed, 90 insertions(+), 54 deletions(-)
+
+commit 95f1e30fde8177f7cc4b58836f88ad714d309d16
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Dec 22 10:22:40 2004 +0000
+
+    1. when doing an opaque resize, the maximize flag should be cleared
+    when the resize starts, not when it finishes
+
+    2. when finishing a non-opaque resize, clearing the maximize flag
+    should be done before setting client.state.resizing to false.  this
+    prevents the window from flickering (due to the window first being
+    restored and then resized to the new location)
+
+ src/Window.cc | 20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
+
+commit a1c32be819f8893e838fd1c40af9fd6a4955ac57
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Dec 22 09:40:18 2004 +0000
+
+    make bsetbg -d work
+
+ util/bsetbg | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 60cb1af6327fcfcb9bacb3f94666594c391b8486
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Dec 22 09:27:06 2004 +0000
+
+    consistency cleanups
+
+ src/Screen.hh | 19 ++++++++++++-------
+ 1 file changed, 12 insertions(+), 7 deletions(-)
+
+commit 4e9cba9174bb87cae337e8a04900481b46caa031
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Dec 21 15:18:48 2004 +0000
+
+    move all of the window settings into BlackboxResource, meaning they
+    are no longer per-screen settings.
+
+ src/BlackboxResource.cc | 311 +++++++++++++++++++++-----------------------
+ src/BlackboxResource.hh | 177 ++++++++++++++++---------
+ src/Configmenu.cc       | 105 +++++++--------
+ src/Screen.cc           |  27 ++--
+ src/Screen.hh           |   1 -
+ src/Window.cc           |  30 ++---
+ src/blackbox.cc         |   2 +-
+ 7 files changed, 342 insertions(+), 311 deletions(-)
+
+commit 5b3707c414fb57ce193f18b40af24b103b94fe49
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Dec 21 15:17:26 2004 +0000
+
+    update todo
+
+ TODO | 3 +++
+ 1 file changed, 3 insertions(+)
+
+commit b57f7c4f107f6b9afbfbc03ada3aa740feee8e80
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Dec 21 14:28:47 2004 +0000
+
+    add write() overload taking a std::string
+
+ lib/Resource.cc | 4 ++++
+ lib/Resource.hh | 1 +
+ 2 files changed, 5 insertions(+)
+
+commit 5148a33aae1ddcf6912cf46e4e43867b280f4357
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Dec 21 12:26:02 2004 +0000
+
+    make the mouse wheel scroll through all workspaces
+
+ src/Screen.cc | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+commit b6da926bc5782fcfed931f7f21d0193c14e8d490
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Dec 21 10:53:24 2004 +0000
+
+    add some convenience functions to reduce the size of the event
+    handlers: startMove(), continueMove(), finishMove(), startResize(),
+    continueResize() and finishResize().
+
+    implement nearest corner resize as originally suggested in patch 791613
+
+ src/BlackboxResource.cc |   4 +
+ src/BlackboxResource.hh |   7 +-
+ src/Window.cc           | 595 +++++++++++++++++++++++++-------------------
+ src/Window.hh           |  14 +-
+ 4 files changed, 357 insertions(+), 263 deletions(-)
+
+commit 3e7ddeece1429efa2d7897086bb305076b86c9b2
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Dec 21 08:49:37 2004 +0000
+
+    reorder the workspace menu as suggested in tracker 700159:
+
+        For a more ergonomic Workspaces menu: Have the 'Icons' member at
+        the top of the list, nearest the mouse pointer when the menu is
+        opened. Have the 'New Workspace' and 'Remove Last' members at the
+        bottom of menu, as far away from the original mouse location as
+        possible.
+
+    this makes good sense...
+
+ src/Workspacemenu.cc | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+commit 966a0ec47f1002597866c3b31d8488ae055154a9
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Dec 21 08:28:13 2004 +0000
+
+    remove some todo items (either done or will never be done)
+
+ TODO | 10 ----------
+ 1 file changed, 10 deletions(-)
+
+commit 4c50ffa04247a2dc908ac647f0324d3d48fc6c88
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Dec 21 08:04:07 2004 +0000
+
+    implement opaque resize
+
+ src/BlackboxResource.cc |   7 ++++
+ src/BlackboxResource.hh |   6 ++-
+ src/Configmenu.cc       |   7 ++++
+ src/Window.cc           | 100 +++++++++++++++++++++++++-------------------
+ 4 files changed, 75 insertions(+), 45 deletions(-)
+
+commit 6ca00ea0f5c350efdc3d5eff49cced76da5065ba
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Dec 20 15:56:13 2004 +0000
+
+    a group transient that sets WM_TRANSIENT_FOR to something else should
+    definately be removed from the group's transient list (or added if a
+    window becomes a group transient)
+
+ src/Window.cc      | 63 +++++++++++++++++++++++++++++---------------------
+ src/WindowGroup.cc | 18 +++++++++++----
+ src/WindowGroup.hh |  3 +++
+ 3 files changed, 54 insertions(+), 30 deletions(-)
+
+commit a6f8401d3ae61ad7244715d092c4a0460ff8d738
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Dec 20 14:49:17 2004 +0000
+
+    1. transients are iconified/deiconified with their parents... make sure
+    this works!
+
+    2. split out BlackboxWindow::setState() into:
+
+       setState(), which sets WM_STATE
+       updateEWMHState(), which sets _NET_WM_STATE
+       updateEWMHAllowedActions(), which sets _NET_WM_ALLOWED_ACTIONS
+
+    note: setState() calls updateEWMHState() and
+    updateEWMHAllowedActions() (i.e. no functional difference).  however,
+    we use the updateEWMH*() functions instead of setState(current_state)
+    in Window.cc
+
+    3. don't put transients with a valid non-transient parent into the
+    client/icon menus (see 1. above)
+
+ src/Screen.cc    | 16 +++++++++++++---
+ src/Window.cc    | 44 ++++++++++++++++++++++++++++++++------------
+ src/Window.hh    |  2 ++
+ src/Workspace.cc | 12 +++++++++++-
+ 4 files changed, 58 insertions(+), 16 deletions(-)
+
+commit 4c96c7754c9306c4a165bed1ef82d699f9092f2d
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Dec 17 17:35:22 2004 +0000
+
+    handle synthetic unmap events according to ICCCM section 4.1.4
+
+ src/Screen.cc | 9 +++++++++
+ src/Screen.hh | 1 +
+ 2 files changed, 10 insertions(+)
+
+commit 954083f5ba0e45d0daac7918c5cf72d36729e140
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Dec 17 14:54:10 2004 +0000
+
+    the event mask for managed client windows is always the same, no need
+    to specify it in lots of different places
+
+ src/Window.cc | 17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
+
+commit a1f10443e036742649b21081aad7e5c0ce8b7d1b
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Dec 17 14:52:26 2004 +0000
+
+    oops... compile
+
+ src/Screen.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit fdde99c7405ad0de44ab2a0262388546374035ec
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Dec 17 14:44:17 2004 +0000
+
+    make sure _NET_CURRENT_DESKTOP is set when managing a screen
+
+ src/Screen.cc | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+commit a4269cf9c556014032812b327edf0527d502dd91
+Author: bradleyhughes <bradleyhughes>
+Date:   Sun Oct 17 14:36:01 2004 +0000
+
+    GNU libiconv doesn't define iconv_open on NetBSD, instead it defines
+
+ configure.ac | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+commit e7d6b514a1c914a37ec3fac903253290e8b05085
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Oct 1 15:55:35 2004 +0000
+
+    when setting/clearing fullscreen and/or maximize, store the previous
+    size in client coordinates, instead of in frame coordinates... this
+    solves the problem where the frame geometry is wrong after clearing
+    fullscreen and/or maximize after a style change
+
+ src/Window.cc | 136 +++++++++++++++++++++++++++++++-----------------------
+ src/Window.hh |   4 +-
+ 2 files changed, 81 insertions(+), 59 deletions(-)
+
+commit 3752f406176248cad9d5283908af09daf20512f5
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Oct 1 15:14:00 2004 +0000
+
+    some cleanups and bug fixes relating to how we handle decoration
+    changes
+
+ src/Window.cc | 219 +++++++++++++++++++++---------------------------------
+ 1 file changed, 85 insertions(+), 134 deletions(-)
+
+commit 74e661f16d45badc4e5b011b4da2932cd2cabd8a
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Sep 30 11:01:10 2004 +0000
+
+    fix crash when reopening a menu close with the left arrow key... since
+    hide() clears _parent_menu, but we want to remember it in case the
+    user tries to reopen the menu
+
+ lib/Menu.cc | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+commit 0ec1bbdf186eda3ff0a89dc77b5424e8a7306237
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Sep 30 08:42:37 2004 +0000
+
+    BScreen::propagateWindowName() should update the iconmenu if the
+    window is iconified (noticed by a user on irc)
+
+ src/Screen.cc | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
+
+commit 67f23d649e8a8c00ea9db7892eaa9e31df3733e5
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Sep 29 06:51:59 2004 +0000
+
+    compile on systems where size_t is not a typedef to unsigned int (like
+    EMX on OS/2)
+
+ lib/Menu.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 7a1c2312a0fce4b4a574346280cb367165d85cfa
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Sep 27 11:02:16 2004 +0000
+
+    starting some cleanups of the BlackboxWindow API: remove some private
+    functions from BlackboxWindow, implementing them instead as static
+    functions in Window.cc
+
+ src/Window.cc | 2773 +++++++++++++++++++++++++++--------------------------
+ src/Window.hh |   30 +-
+ 2 files changed, 1421 insertions(+), 1382 deletions(-)
+
+commit 2e86cb5cb97cb3d9a5e5301c255d9c7c50b0ed11
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Sep 27 10:14:03 2004 +0000
+
+    don't set the base size to the minimum size, use the base size as set
+    by the client (to prevent blackbox from using too large of base size
+    in e.g. xterm)
+
+ src/Window.cc | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
+
+commit ab3f79d00b5add816d5dde91f1b6f38c76591607
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 24 10:09:49 2004 +0000
+
+    if WM_PROTOCOLS changes, we need to make sure we update the
+    decorations correctly.  instead of blindly enabling the close
+    function/button, we need to make sure it's appropriate for the window
+    type, motif hints, etc.
+
+ src/Window.cc | 19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
+
+commit e09b89568b034240d204450c54e67072b8bdbec3
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 24 10:08:40 2004 +0000
+
+    desktop and dock windows shouldn't keep focus when switching to a new
+    workspace
+
+    fixes bug 1024929
+
+ src/Screen.cc | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+commit 6b8523a22440691df7c9b3bb6d58d0443d5a8e06
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 24 08:31:47 2004 +0000
+
+    a few cleanups and code rearranging... no functionality/behavior changes
+
+ src/blackbox.cc | 451 ++++++++++++++++++++++++++--------------------------
+ src/blackbox.hh |  55 ++++---
+ 2 files changed, 256 insertions(+), 250 deletions(-)
+
+commit 328b38edd882f92da88d99f648039f9dc337041f
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Sep 23 16:47:43 2004 +0000
+
+    bt::Netwm -> bt::EWMH
+
+ src/Screen.cc   | 198 +++++++++++++++++++++---------------------
+ src/Screen.hh   |   8 +-
+ src/Slit.hh     |   2 +-
+ src/Toolbar.hh  |   2 +-
+ src/Window.cc   | 244 ++++++++++++++++++++++++++--------------------------
+ src/Window.hh   |   8 +-
+ src/blackbox.cc |   8 +-
+ src/blackbox.hh |   7 +-
+ 8 files changed, 239 insertions(+), 238 deletions(-)
+
+commit 5646f1bedf0a9ce9b0177374744c120f4677a2f1
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Sep 23 16:43:27 2004 +0000
+
+    Netwm.* -> EWMH.*
+
+ lib/Makefile.am |   4 +-
+ lib/Netwm.cc    | 708 ----------------------------------------------------
+ lib/Netwm.hh    | 338 -------------------------
+ 3 files changed, 2 insertions(+), 1048 deletions(-)
+
+commit b09a7f9ea230d710390e7b46258ad1f3187f497c
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Sep 23 16:42:37 2004 +0000
+
+    add EWMH.{cc,hh}, which is a copy of Netwm.*, with Netwm converted to
+    EWMH, and using bt::Display instead of the Xlib Display* type
+
+ lib/EWMH.cc | 708 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ lib/EWMH.hh | 339 +++++++++++++++++++++++++++
+ 2 files changed, 1047 insertions(+)
+
+commit c0f349f160e08024ac3025145070d283731f572c
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Sep 23 16:19:14 2004 +0000
+
+    guard against wierd clients that set their minimum size to something
+    that is smaller than the base size
+
+ src/Window.cc | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+commit d67a1a6ea0b7beea560041c707fa21845a148eed
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 17 09:34:48 2004 +0000
+
+    cleanups
+
+ configure.ac | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+commit 57bcde097736a5b150ca51f8ba96985b423f9674
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 17 09:24:35 2004 +0000
+
+    Xft does indeed work on <= 8bpp displays, but only if antialias is off
+
+ lib/Font.cc | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+commit 828a7e4195a72c9cd7e9dddb0b38434b2d81ded7
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Sep 15 09:54:53 2004 +0000
+
+    fix bug 1026764: crash when removing last workspace while in it
+
+ src/Screen.cc | 25 +++++++++++--------------
+ 1 file changed, 11 insertions(+), 14 deletions(-)
+
+commit dcb065ce10474aaa6d22e2d30ff0f4dad98c1ad7
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Sep 15 09:39:27 2004 +0000
+
+    keep the codeset around, and use it when converting from locale to
+    UTF-32... this is needed on Solaris (at least), which doesn't follow
+    the POSIX specification that "" indicates the locale's encoding.
+
+ lib/Unicode.cc | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+commit 2e2dc8d87e6ac415bcb68778188cb92d37354993
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Sep 14 10:29:45 2004 +0000
+
+    make sure apps using libbt get the iconv and locale libraries (if needed).
+
+ lib/libbt.pc.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit a1e42078955009e6670c3723b357f835cb3bb3df
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Sep 14 10:28:05 2004 +0000
+
+    spit out more information about which compiler flags are being used
+
+ configure.ac | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit a52c40273b5f9ac17c29bc67a361ec4261ac2090
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 10 10:10:55 2004 +0000
+
+    1. make bstyleconvert output the converted style in the current
+    directory, not in the directory where the style is (makes it possible
+    to convert a directory full of old styles into a new directory)
+
+    2. the window title, window handle, window grip and toolbar textures
+    should have a border, where as the menu active should not.
+
+    with these 2 changes, passing the default styles from 0.65.x through
+    bstyleconvert generates the same look in 0.70.0
+
+ util/bstyleconvert.cc | 69 +++++++++++++++++------------------------------
+ 1 file changed, 24 insertions(+), 45 deletions(-)
+
+commit 701e834c7f1698159645423dfd84e19cf81631d9
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 10 08:02:22 2004 +0000
+
+    use BlackboxWindow::activate() in the iconmenu as well
+
+ src/Iconmenu.cc | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+commit 6316bcaa7ea1bb6c36ff4a3e7d0b1969c4280b6b
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 10 08:01:47 2004 +0000
+
+    add BlackboxWindow::activate(), which moves a window to the current
+    workspace, deiconifies, focuses and raises it...
+
+    use this new function in the 3 places where we do
+    activation/deiconification
+
+ src/Window.cc   | 35 ++++++++++++++++++++++-------------
+ src/Window.hh   |  1 +
+ src/blackbox.cc | 15 ++-------------
+ 3 files changed, 25 insertions(+), 26 deletions(-)
+
+commit 2fb6fd53789950e1dcfd4029db597ae05e2f286f
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Sep 7 07:15:46 2004 +0000
+
+    correct 'unsigned char *' -> 'char **' conversion (found with the Sun
+    C++ compiler)
+
+ lib/Netwm.cc | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+commit b2c2f45879baa52f9c94222d33f5c2666e538bfe
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Sep 7 07:03:57 2004 +0000
+
+    don't declare nested structs in the private section of a class, the
+    Sun C++ compiler doesn't allow these to be used outside of the nesting
+    class.
+
+ lib/PixmapCache.cc | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit 8cc25bc0e4cd2239382fffdf6384e5c86ca305fd
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Sep 7 07:01:53 2004 +0000
+
+    autodetect the codeset for the locale and pass it to
+    iconv_open(3)... iconv_open(3) on solaris 8 doesn't support the POSIX
+    requirement that "" means "use the locale's encoding"
+
+ lib/Unicode.cc | 30 +++++++++++++++++++++++++-----
+ 1 file changed, 25 insertions(+), 5 deletions(-)
+
+commit 9eedc62afcaa3d35a3113e91ceb2ed96ba1cd0f7
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Sep 7 06:58:58 2004 +0000
+
+    look for nl_langinfo, we need it after all
+
+ configure.ac | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit d97218d3977d9be6e401229a34781cede4edb32e
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Sep 6 09:49:27 2004 +0000
+
+    fix compilation with DEBUG defined
+
+ src/Window.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit c6462fedb30c4c5b90a9ce34e07d5f1ca5433409
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 3 13:21:51 2004 +0000
+
+    Look in the most logical places for external libraries
+
+ configure.ac | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+commit 18d51466df0d72f2ebeeee3491d6e0e44294e5e4
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 3 13:14:11 2004 +0000
+
+    we don't watch for fatal signals, so we don't need to handle them in
+    the signal handler
+
+ lib/Application.cc | 20 ++------------------
+ 1 file changed, 2 insertions(+), 18 deletions(-)
+
+commit 02c3147a2273a21d24bb2904dcdd74233ec5d9e6
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 3 09:58:25 2004 +0000
+
+    implement bt::Menu::insertItem() overloads as inlines
+
+ lib/Menu.cc | 17 -----------------
+ lib/Menu.hh | 23 +++++++++++++++--------
+ 2 files changed, 15 insertions(+), 25 deletions(-)
+
+commit cf1d6dcf4a970e1eca3104d6f9571734f30aa04c
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 3 09:35:15 2004 +0000
+
+    don't tie menus to a single parent menu... instead, dynamically set
+    the parent s the active item changes... this allows us to have a
+    single menu inserted multiple times in different parents.
+
+    fixes bug 991751
+
+ lib/Menu.cc | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+commit bd3d5c583e277767229702563bb0da00c548918e
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 3 08:31:49 2004 +0000
+
+    compile with g++ 2.95.4 on FreeBSD
+
+ lib/Font.cc    |  4 ++--
+ lib/Unicode.cc | 16 +++++++++-------
+ 2 files changed, 11 insertions(+), 9 deletions(-)
+
+commit 371556edfdf9a631aa76117b9e0dc80bbe448a3f
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 3 08:31:19 2004 +0000
+
+    work around a problem with the GNU ISO C++ library distributed with
+    g++ 3.x: char_traits must be specialized to be able to use character
+    types other than char and wchar_t together with basic_string
+
+ lib/Unicode.hh | 109 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 108 insertions(+), 1 deletion(-)
+
+commit a14ddd6c7975046fe2826e5cebe4d6a53f94590c
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 3 07:42:41 2004 +0000
+
+    use const iterators in non mutating loops
+
+    remove shadow declarations by reusing existing variables
+
+ src/Screen.cc | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+commit 47f783181add8d5d065c29aa763ea9ffafd7638d
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 3 06:43:21 2004 +0000
+
+    dont set the focus on workspace change unless the user has enabled the
+    option for it
+
+ src/Screen.cc | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+commit ad9c52d0b20c8211bbd0c87d00b9abb333cc8b72
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 3 06:39:17 2004 +0000
+
+    if the focused window is removed from the workspace, reset
+    focused_window
+
+ src/Workspace.cc | 3 +++
+ 1 file changed, 3 insertions(+)
+
+commit fcf7c1279ce088d1b1b066683d0b86b05aa5546b
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Sep 3 06:36:34 2004 +0000
+
+    when switching workspaces, focus the window that last had focus on the
+    workspace... if the window doesn't exist, focus the top-most window
+    instead.
+
+ src/Screen.cc    | 45 ++++++++++++++++++++++++++++++++++++++++++---
+ src/Workspace.cc |  2 ++
+ src/Workspace.hh |  8 ++++++++
+ 3 files changed, 52 insertions(+), 3 deletions(-)
+
+commit acf6067d165584f3e25a494b03ee14f5a37cf036
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Sep 2 15:01:07 2004 +0000
+
+    convert workspace names from Unicode to the locale encoding when
+    writing them to the rc file
+
+ src/BlackboxResource.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 22e968e58a7b0bdaf5f8d051c5cb0effbec6f9b1
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Sep 2 10:32:15 2004 +0000
+
+    don't use the window functions to disallow move/resize when handling
+    ConfigureRequest events... we should always assume that the
+    application knows what it is doing
+
+ src/Window.cc | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+commit ae046aaf46c9e6e1c7fef9184dd123befaea67f1
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Sep 2 08:57:35 2004 +0000
+
+    bt::ustring is in the native endian, so we need to add the BOM so that
+    iconv(3) knows which endian to expect.
+
+ lib/Unicode.cc | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+commit 09d8ade6058089f85ce48d148fcd40c1c7e5ce16
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Sep 2 08:29:50 2004 +0000
+
+    updates
+
+ TODO | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit d199f20b36c25415ca42b3d792e113d0933ed776
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Sep 2 08:26:05 2004 +0000
+
+    convert unicode window title to locale when dumping stacking list
+
+ src/StackingList.cc | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+commit 30440fd73a281ea038303e25d2bfae00c8f9303d
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Sep 2 07:22:07 2004 +0000
+
+    style and consistency updates
+
+ lib/Application.cc  |  73 ++++++++++++++----------
+ lib/Bitmap.cc       |  55 +++++++++---------
+ lib/Color.cc        |  65 ++++++++++++++-------
+ lib/Color.hh        |   6 +-
+ lib/Display.cc      |   8 +--
+ lib/Display.hh      |  36 ++++++++----
+ lib/EventHandler.hh |  54 ++++++++++++------
+ lib/Font.cc         |  75 +++++++++++++++---------
+ lib/Font.hh         |  12 ++--
+ lib/Image.cc        | 107 ++++++++++++++++++++--------------
+ lib/Image.hh        |   4 +-
+ lib/Menu.cc         | 149 ++++++++++++++++++++++++++++++------------------
+ lib/Menu.hh         | 104 ++++++++++++++++++++-------------
+ lib/Netwm.cc        |  72 +++++++++++------------
+ lib/Netwm.hh        | 142 +++++++++++++++++++++++++++++----------------
+ lib/Pen.cc          |  90 +++++++++++++++++------------
+ lib/Pen.hh          |   6 +-
+ lib/PixmapCache.cc  |  58 ++++++++++---------
+ lib/Rect.cc         |  15 ++---
+ lib/Rect.hh         |  47 +++++++++------
+ lib/Resource.cc     |  19 +++---
+ lib/Resource.hh     |   6 +-
+ lib/Texture.cc      |  27 +++++----
+ lib/Texture.hh      |  17 +++---
+ lib/Timer.cc        |  15 +++--
+ lib/Timer.hh        |  37 ++++++++----
+ lib/Unicode.cc      |  32 +++++++++--
+ lib/Unicode.hh      |  59 +++++++++++++++----
+ lib/Util.cc         |  16 +++---
+ lib/Util.hh         |   3 +-
+ 30 files changed, 880 insertions(+), 529 deletions(-)
+
+commit 144fa4a5f4b8b4085e556b0a1f3b4147581175aa
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Sep 2 06:52:20 2004 +0000
+
+    fix compilation on systems that require Xlib.h before Xresource.h
+    (e.g. Solaris)
+
+ lib/Resource.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit e1e47e237faf9f54b87aa7a398b90ca455ca3d5f
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Sep 1 16:29:20 2004 +0000
+
+    handle POSIX compliant and GNU libiconv implementations of iconv(3) at
+    build time
+
+ configure.ac   | 23 +++++++++++++++++++++++
+ lib/Unicode.cc | 20 ++++++++++++++++++++
+ 2 files changed, 43 insertions(+)
+
+commit 8411dd0adcea34623338dcd5b10645b39b2cc3d0
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Sep 1 09:22:24 2004 +0000
+
+    next release is 0.70.0beta2
+
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 5c44407efbe57f77c1bf2dca11528458d45fc98f
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Sep 1 08:49:32 2004 +0000
+
+    need errno.h
+
+ lib/Unicode.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit a0c44ab5abfa5aeca3d74cc06025ae4b722daec6
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Aug 31 16:02:06 2004 +0000
+
+    the next version is 0.70.0beta2
+
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 26b3124dde1befb2d0d3a0f999c24130c86cc0b3
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Aug 31 15:54:51 2004 +0000
+
+    updates
+
+ TODO | 20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
+
+commit e8bb88fea8c307a87f20930351c15c9c38c3d984
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Aug 31 15:15:39 2004 +0000
+
+    remove unused functions
+
+ src/Workspace.cc | 3 ---
+ src/Workspace.hh | 6 ------
+ 2 files changed, 9 deletions(-)
+
+commit f01b3505ad5d16fe02a1c57f4832e96d863301d4
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Aug 31 14:37:47 2004 +0000
+
+    allow the commands in this script to be overridden by environment
+    variables (the same ones that the configure script uses)
+
+ mk.sh | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+commit c31799094784f017e371bac839e1025e96d6e5d6
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Aug 31 14:27:33 2004 +0000
+
+    use bt::ustring for all user visible strings... this gives us Unicode
+    support!
+
+ src/BlackboxResource.cc | 31 ++++++++--------
+ src/BlackboxResource.hh |  7 ++--
+ src/Configmenu.cc       | 59 +++++++++++++++---------------
+ src/Iconmenu.cc         |  4 ++-
+ src/Rootmenu.cc         |  4 ++-
+ src/Rootmenu.hh         |  2 +-
+ src/Screen.cc           | 88 +++++++++++++++++++++++++--------------------
+ src/Slitmenu.cc         | 36 ++++++++++---------
+ src/StackingList.cc     |  4 ++-
+ src/Toolbar.cc          | 72 +++++++++++++++++++------------------
+ src/Toolbarmenu.cc      | 27 +++++++-------
+ src/Window.cc           | 29 +++++++++------
+ src/Window.hh           | 14 ++++----
+ src/Windowmenu.cc       | 22 ++++++------
+ src/Workspace.cc        | 12 ++++---
+ src/Workspace.hh        |  8 ++---
+ src/Workspacemenu.cc    | 10 +++---
+ 17 files changed, 235 insertions(+), 194 deletions(-)
+
+commit a8e0f790209ab987a66a9eb1cd110ba7d9a74ace
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Aug 31 14:20:55 2004 +0000
+
+    EWMH requires that strings be in UTF-8.  with this change, the
+    bt::Netwm API requires Unicode strings (bt::ustring) and converts to
+    UTF-8 automatically.  If the system cannot convert to UTF-8, then
+    bt::Netwm does not set the related property
+
+ lib/Netwm.cc | 67 +++++++++++++++++++++++++++++++++++++++++---------------
+ lib/Netwm.hh | 18 ++++++++-------
+ 2 files changed, 59 insertions(+), 26 deletions(-)
+
+commit c83a4a896c5f56cf2b6be08785a1eb6342309dd5
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Aug 31 14:18:31 2004 +0000
+
+    enable Unicode support in libbt by using bt::ustring for all
+    user-visible strings.
+
+ lib/Font.cc | 57 +++++++++++++++++++++++++++++----------------------------
+ lib/Font.hh | 25 ++++++++++++-------------
+ lib/Menu.cc | 10 +++++-----
+ lib/Menu.hh | 24 ++++++++++++------------
+ 4 files changed, 58 insertions(+), 58 deletions(-)
+
+commit f3d2d441df9133b35934a38c4727134ea31ca2ed
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Aug 31 12:56:16 2004 +0000
+
+    1. don't leak iconv_t's
+
+    2. handle the case where iconv_open(3) can fail
+
+    3. if we don't have any Unicode support, fallback to something that at
+    least lets us see ASCII text
+
+ lib/Unicode.cc | 21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
+
+commit 12ba704bb926f2318b8cf25b10d84a31adda1524
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Aug 31 12:52:26 2004 +0000
+
+    no need to include config.h
+
+ lib/Application.cc | 4 ----
+ lib/Util.cc        | 4 ----
+ 2 files changed, 8 deletions(-)
+
+commit f24dc290de1604e9d941f7755444ade0a964835b
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Aug 31 12:51:54 2004 +0000
+
+    make sure we link with the library that has setlocale() (as detected
+    by the configure script).
+
+ lib/Makefile.am | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 722d76488b6ebb2af501b992f7c71055d26f730f
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Aug 31 12:46:21 2004 +0000
+
+    we don't need nl_langinfo(3) after all, just iconv(3) and setlocale(3)
+
+ configure.ac | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
+
+commit 0df592177ef21680e6c18f8f2044f98e9fc1ee66
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Aug 31 12:09:08 2004 +0000
+
+    workspace names should drop the null separator instead of prepending
+    it to the next workspace name.
+
+ lib/Netwm.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 4bf9c0c30eb6632f9d5e3a0029eb937aa344bc47
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Aug 31 10:47:41 2004 +0000
+
+    improve unicode support:
+
+    1. change the bt::ustring type to basic_string<unsigned int> to avoid
+    confusion with std::wstring
+
+    2. fix UTF-8 <-> UTF-32 conversions
+
+    3. fix iconv(3) code to use the correct data type sizes
+
+    4. UTF-32 strings normally begin with a BOM (byte order mark) to allow
+    the program to determine the endianness.  bt::ustring should not
+    contain the BOM, and it should be converted to the native endian
+
+ lib/Unicode.cc | 57 +++++++++++++++++++++++++++++++++++++++++-------------
+ lib/Unicode.hh |  4 +++-
+ 2 files changed, 47 insertions(+), 14 deletions(-)
+
+commit 401c2e46bb578a063e65a97c858b2fb48c8c56b3
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Aug 30 18:07:22 2004 +0000
+
+    rename Utf8.* to Unicode.*
+
+ lib/Makefile.am             | 8 ++++----
+ lib/{Utf8.cc => Unicode.cc} | 0
+ lib/{Utf8.hh => Unicode.hh} | 0
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+commit 991cf4a0bf1453110cc933112fa5b579f8d5e3c0
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Aug 30 18:04:54 2004 +0000
+
+    Add support for UTF-32 as well as UTF-8... UTF-32 will be used throughout
+    the API where we need to do character operations (like bt::ellideText)
+    using
+    the bt::ustring type.  Conversions to/from locale, UTF-8 and UTF-32
+    are done
+    using iconv(3).
+
+    Prepare to rename Utf8.* to Unicode.*
+
+ lib/Utf8.cc | 167 ++++++++++++++++++++++++++++----------------------------
+ lib/Utf8.hh |  23 ++++++--
+ 2 files changed, 101 insertions(+), 89 deletions(-)
+
+commit 800915fb2408a51ba2474a626c938c690c6fc611
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Aug 30 08:31:48 2004 +0000
+
+    add missing includes
+
+ lib/Utf8.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit 88b87b7b7561cbfe469a20655d65e33b2c8b1bb8
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Aug 30 08:11:47 2004 +0000
+
+    UTF-8 support requires iconv(3), so make sure we test for it and link
+    it with libbt
+
+ configure.ac    | 14 +++++++++-----
+ lib/Makefile.am |  8 ++++++--
+ 2 files changed, 15 insertions(+), 7 deletions(-)
+
+commit 5bd1f6c5a9c926a3e0bc59431d040b301348a545
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Aug 30 07:51:19 2004 +0000
+
+    remove unused files
+
+ lib/i18n.cc | 118 --------------------------------------------------------
+ lib/i18n.hh |  63 ------------------------------
+ 2 files changed, 181 deletions(-)
+
+commit b427b7fbf0bd847745e42b12ea06878a6897225d
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Aug 30 07:50:47 2004 +0000
+
+    add support for UTF-8 through iconv(3)
+
+ lib/Utf8.cc | 136 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ lib/Utf8.hh |  16 +++++++
+ 2 files changed, 152 insertions(+)
+
+commit 95b782725ad702d83489c358c4003843f07f0d51
+Author: bradleyhughes <bradleyhughes>
+Date:   Sun Aug 29 11:33:14 2004 +0000
+
+    remove unused function (cube_root) and silence signed/unsigned
+    mismatch warnings
+
+ lib/Image.cc | 32 +++++++-------------------------
+ 1 file changed, 7 insertions(+), 25 deletions(-)
+
+commit a2779a916117d073edf0fcc31883a95208e0cbc8
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Aug 27 15:15:56 2004 +0000
+
+    don't build NLS stuff
+
+ Makefile.am  |  1 -
+ configure.ac | 37 ++++++-------------------------------
+ 2 files changed, 6 insertions(+), 32 deletions(-)
+
+commit 088c17239dbe51996055adbbd22233ce7fc396b4
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Aug 27 15:15:29 2004 +0000
+
+    on my freebsd box, extras live in /usr/local/share/aclocal
+
+ mk.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit d6262009cec7c230099c78c0a949f082494cd4ed
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Aug 27 13:22:24 2004 +0000
+
+    when changing the text of a menu item, we need to recalculate the size
+    of the menu (redrawing alone is not enough)
+
+ lib/Menu.cc | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+commit 8bcb077028f8e6b27d85c45d6aa3dc0b34a30e25
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Aug 27 11:51:44 2004 +0000
+
+    unshading a horizontally maximized window should not cause the window
+    to become fully maximized.
+
+    fixes bug 989807
+
+ src/Window.cc | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+commit 333e04d9666cdbc4362b614ba4f483bac1de1fdd
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Aug 27 11:22:18 2004 +0000
+
+    automatically scan the strftime format and determine the resolution of
+    the clock_timer... this allows people to have %S in their format (to
+    display the current number of seconds)
+
+ src/Toolbar.cc | 28 +++++++++++++++++++++-------
+ src/Toolbar.hh |  2 ++
+ 2 files changed, 23 insertions(+), 7 deletions(-)
+
+commit 35f23657b9bb306d82959d76838ed36f0215804b
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Aug 27 08:27:21 2004 +0000
+
+    beginnings of documentation of the style format in 0.70
+
+ data/README.style | 296 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 296 insertions(+)
+
+commit a649756e420c2c3a7ad6142238fb7f7d471cc44e
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Aug 27 08:09:48 2004 +0000
+
+    better support for transients of group transients
+
+    1. prevent infinite recursion when trying to focus a transient of a
+    modal group transient
+
+    2. fix stacking for transients of group transients
+
+ src/Screen.cc | 108 +++++++++++++++++++++++++-----------------------------
+ src/Window.cc |  34 ++++++++++++++++-
+ src/Window.hh |   1 +
+ 3 files changed, 83 insertions(+), 60 deletions(-)
+
+commit 6682961b9c3044b1f2ed52f7cb2eba18fdb76048
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Aug 27 07:54:29 2004 +0000
+
+    improve readability of the output from StackingList::dump()
+
+ src/StackingList.cc | 77 +++++++++++++++----------------------------------
+ 1 file changed, 24 insertions(+), 53 deletions(-)
+
+commit c1007b39012d2186e7c44075a761dc7740800dec
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Aug 25 13:23:20 2004 +0000
+
+    make sure focusFallback and stacking works correctly for windows with
+    occupy-all-workspaces set
+
+ src/Screen.cc | 21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
+
+commit e03903ced9e7676c5bdc99cac0211ce86a13e6be
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Aug 25 11:34:43 2004 +0000
+
+    support more depth/visual combinations:
+
+    the maximum number of colors used for pseudocolor and grayscale
+    visuals is no longer hard coded, instead we try to find the most
+    appropriate value given the depth of the visual.
+
+ lib/Image.cc | 479 +++++++++++++++++++++++++++++++++----------------------
+ 1 file changed, 288 insertions(+), 191 deletions(-)
+
+commit 7a835b73c2269d504c5183f9ecc4d481f911c267
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Aug 25 11:04:35 2004 +0000
+
+    don't restrict the maximum number of colors to < 256 (to be able to
+    support 12-bit displays, for example).
+
+ lib/Image.hh | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+commit 115d7d45f68b6002ec7b0e3a6dc4f308c29bbec2
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Aug 23 14:48:46 2004 +0000
+
+    rename Blackbox::get* functions appropriately
+
+ src/Screen.cc   |  8 ++++----
+ src/Toolbar.cc  |  4 ++--
+ src/Window.cc   | 34 +++++++++++++++++-----------------
+ src/blackbox.hh | 23 +++++++++++++++--------
+ 4 files changed, 38 insertions(+), 31 deletions(-)
+
+commit 20696b21ed2852902356abf7996aea2bc8f8e480
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Aug 23 12:55:03 2004 +0000
+
+    erp... apparently the functions in Toolbar are needed, re-add them
+
+ src/Slit.cc    | 4 ++--
+ src/Toolbar.cc | 9 ++-------
+ src/Toolbar.hh | 8 ++++++++
+ 3 files changed, 12 insertions(+), 9 deletions(-)
+
+commit 31879c24defae6e31bf7a793d27315081fe305b9
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Aug 23 12:46:09 2004 +0000
+
+    remove Toolbar::get* functions as they are not needed outside of
+    Toolbar itself)
+
+ src/Toolbar.cc |  9 +++++++--
+ src/Toolbar.hh | 13 +++----------
+ 2 files changed, 10 insertions(+), 12 deletions(-)
+
+commit 525e3172aca858f9be9df2de1c0e0fa3dec8123a
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Aug 23 12:39:22 2004 +0000
+
+    rename Slit::get* functions appropriately (and remove unused functions)
+
+ src/Slit.cc | 14 +++++++-------
+ src/Slit.hh |  6 ++----
+ 2 files changed, 9 insertions(+), 11 deletions(-)
+
+commit ae45d5d469d80b92ada184f07491905fc68ee6ba
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Aug 23 12:09:40 2004 +0000
+
+    rename BScreen::get* functions appropriately
+
+ src/BlackboxResource.cc |   4 +-
+ src/Clientmenu.cc       |   2 +-
+ src/Rootmenu.cc         |  10 +-
+ src/Screen.cc           | 325 ++++++++++++++++++++++----------------------
+ src/Screen.hh           |  25 ++--
+ src/Slit.cc             |   2 +-
+ src/Toolbar.cc          |   4 +-
+ src/Windowmenu.cc       |   8 +-
+ src/Workspace.cc        |   2 +-
+ 9 files changed, 192 insertions(+), 190 deletions(-)
+
+commit 02f08ad87640dc797e9c0f2fc2fb1012ebf45bdb
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Aug 23 11:52:29 2004 +0000
+
+    rename all BlackboxWindow::get* functions appropriately
+
+ src/Screen.cc       | 28 ++++++++++++++--------------
+ src/StackingList.cc | 12 ++++++------
+ src/Toolbar.cc      |  2 +-
+ src/Window.cc       | 28 ++++++++++++++--------------
+ src/Window.hh       | 17 +++++++----------
+ src/Windowmenu.cc   |  2 +-
+ src/Workspace.cc    |  2 +-
+ src/blackbox.cc     |  2 +-
+ 8 files changed, 45 insertions(+), 48 deletions(-)
+
+commit 2ad8826b573ff6bfe937bf268f9986cb4984ae20
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Aug 23 11:38:54 2004 +0000
+
+    BlackboxWindow::getScreen() -> BlackboxWindow::screen()
+
+ src/Screen.cc     |   6 +-
+ src/Toolbar.cc    |   5 +-
+ src/Window.cc     | 248 +++++++++++++++++++++++++-------------------------
+ src/Window.hh     |   6 +-
+ src/Windowmenu.cc |  17 ++--
+ src/blackbox.cc   |   8 +-
+ 6 files changed, 146 insertions(+), 144 deletions(-)
+
+commit 4fe2c96062944a39bed6672e4adb8afc95610f15
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Aug 23 09:56:13 2004 +0000
+
+    remove todo item (_NET_WM_VISIBLE_NAME is always set)
+
+ TODO | 2 --
+ 1 file changed, 2 deletions(-)
+
+commit a0369da48dda0fa4c89fee861b423e6e2d88239a
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 30 15:27:13 2004 +0000
+
+    we should handle all 'virtual' focus events, not just
+    NonlinearVirtual... this should solve focus problems with firefox
+
+ src/blackbox.cc | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+commit 5cc98d17fca0bde311a8963d69f3c79b24f98614
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 30 14:25:06 2004 +0000
+
+    improve stacking of group transients... they are kept on top of all
+    other windows in the group (with the exception of transients of a
+    group transient)
+
+ src/Screen.cc | 167 ++++++++++++++++++++++++++++++++++--------------------
+ src/Screen.hh |   7 ++-
+ 2 files changed, 111 insertions(+), 63 deletions(-)
+
+commit 1a297595bb356e9a1a5e911085a013e76f2aaa0b
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 30 13:18:34 2004 +0000
+
+    1. add BlackboxWindow::getWindowGroup()
+    2. don't reset transient_for on all transients when closing a window
+
+ src/Window.cc | 65 ++++++++++++++++++++++++++++++++++---------------------
+ src/Window.hh |  2 ++
+ 2 files changed, 42 insertions(+), 25 deletions(-)
+
+commit b1deb76525dde2aefa6cbbc852cc5cc0e96a6a2f
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 30 13:17:11 2004 +0000
+
+    BWindowGroup shouldn't add group transients to all group members... we
+    will instead need to put priority on group transients, followed by
+    windows and their transients... this is all in the works and not quite
+    finished just yet
+
+ src/WindowGroup.cc | 54 ++++----------------------------------------------
+ src/WindowGroup.hh |  6 ++++--
+ 2 files changed, 8 insertions(+), 52 deletions(-)
+
+commit 03f8fd800c38df53f854d72b965fea210be8ad43
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 30 13:15:39 2004 +0000
+
+    focusFallback should give focus to the top-most window in the group
+    before trying any other method
+
+ src/Screen.cc | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+commit c9cefff6afcd7044dd7d51fb37d8d5c3671937fc
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 30 10:56:26 2004 +0000
+
+    oops... make sure 'win' is never zero when raising/lowering transients
+
+ src/Screen.cc | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
+
+commit 726aa23316d77b88fd8080fe011cc4757c59afd3
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 30 10:43:10 2004 +0000
+
+    beginnings of better support for group transients (and modal group
+    transients)
+
+    more to come
+
+ src/Screen.cc      |  47 +++++++++---------
+ src/Window.cc      | 127 ++++++++++++++++++++++++-------------------------
+ src/Window.hh      |  18 ++++---
+ src/WindowGroup.cc |  88 ++++++++++++++++++++++------------
+ src/WindowGroup.hh |  16 ++-----
+ 5 files changed, 161 insertions(+), 135 deletions(-)
+
+commit 77da3803cedf9f15c6711725651f3694b8bd619f
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jul 29 13:08:29 2004 +0000
+
+    oops
+
+ src/Screen.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 2f79636fb1f4d60ebba09207ca8bfc9d3331234b
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jul 29 13:07:38 2004 +0000
+
+    remove unnecessary XSync() call
+
+ src/blackbox.cc | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit e9f8c439275c2cc44c170944d7e7c213d094d220
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jul 29 13:05:56 2004 +0000
+
+    greatly improve the simlicity and cleanliness of the focus handling
+    code... things have been moved into more logical positions
+
+    this should resolve some dangling pointer issuess found with the focus
+    fallback mechanism, and solve crash problems when the closing a
+    focused, full-screen window.
+
+ src/Screen.cc   |  38 ++++++++---
+ src/Screen.hh   |   5 ++
+ src/Window.cc   |  49 ++++++--------
+ src/blackbox.cc | 192 ++++++++++++++++++++++++++++++----------------------
+ src/blackbox.hh |   4 ++
+ 5 files changed, 166 insertions(+), 122 deletions(-)
+
+commit be0c1a79c4b258fc4a5067a4695c05959416d309
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jul 29 10:06:17 2004 +0000
+
+    return false (instead of zero) in functions returning a bool
+
+ src/Screen.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit db88d231bcb12bde0aa471ce5bac1e8517a23fbb
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jul 29 10:03:14 2004 +0000
+
+    fixup focus fallback slightly... we should find the next focus window
+    *before* removing the current focus window from the stacking list...
+    instead make the fallback logic ignore the current focused window when
+    searching for the new one
+
+ src/Screen.cc | 37 +++++++++++++++++++++++--------------
+ 1 file changed, 23 insertions(+), 14 deletions(-)
+
+commit 40d737f72790c394de3042bec3b74957ee4f4c2c
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jul 29 09:52:43 2004 +0000
+
+    give the display name and multi-head arguments defaults, to make them
+    slightly easier to use in the common case
+
+ lib/Application.hh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 679bc24c24911fcd78ef57a8bc662ba9c640abfd
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jul 29 09:43:29 2004 +0000
+
+    remove Blackbox::validateWindow and
+    BlackboxWindow::validateClient... we really don't need these things
+
+ src/Screen.cc   |  2 +-
+ src/Slit.cc     |  8 +-------
+ src/Window.cc   | 30 ------------------------------
+ src/Window.hh   |  2 --
+ src/blackbox.cc | 12 ------------
+ src/blackbox.hh |  2 --
+ 6 files changed, 2 insertions(+), 54 deletions(-)
+
+commit debcb35f6e38e02b77e2ed169b2a709019f84096
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jul 13 10:55:47 2004 +0000
+
+    get focus fallback working again... this needs to be done after
+    removing the currently focused window from the window lists...
+
+    and indication of success is also useful, so that we can move focus
+    back to pointer root if nothing gets focus
+
+ src/Screen.cc | 116 ++++++++++++++++++++++++------------------------------
+ src/Screen.hh |   3 +-
+ 2 files changed, 53 insertions(+), 66 deletions(-)
+
+commit c7cc68ceb45f4429656b8245323bbe418b9f10c8
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jul 13 09:26:12 2004 +0000
+
+    erp... make sure that activating items in the menu after the first
+    separator still closes the menu
+
+ lib/Menu.cc | 28 +++++++++++++++-------------
+ 1 file changed, 15 insertions(+), 13 deletions(-)
+
+commit 2e7b5c8caedfad17a0551fa8214a2c220090a54c
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jul 13 09:02:33 2004 +0000
+
+    ignore separators in menus when activating, deactivating and clicking
+
+    fixes bug 989159
+
+ lib/Menu.cc | 78 ++++++++++++++++++++++++++++++++++-----------------------
+ 1 file changed, 46 insertions(+), 32 deletions(-)
+
+commit 5d0b9a426c69de520e9c08be5e6bceac86e37275
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jul 12 11:53:22 2004 +0000
+
+    RevertToNone -> RevertToPointerRoot
+
+ src/blackbox.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 7f8bb2a620dba4acc688ca80f6ec01a981f67ab4
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jul 12 11:48:35 2004 +0000
+
+    be a good X client: replace CurrentTime with the last known timestamp
+    everywhere a timestamp is needed
+
+ src/Window.cc   | 18 +++++++++---------
+ src/blackbox.cc |  4 ++--
+ 2 files changed, 11 insertions(+), 11 deletions(-)
+
+commit 5eef3ecd394fbd4e85e6d62ca485872784795fb4
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jul 12 11:19:53 2004 +0000
+
+    when restoring a window, it is no longer visible, so mark it as such
+
+ src/Window.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit 7c79d3997d9adb67d54bf4b5b3a130c57ec40396
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jul 12 11:06:04 2004 +0000
+
+    remove unused variables and functions from the Blackbox class
+
+ src/blackbox.cc |  4 ----
+ src/blackbox.hh | 11 +++--------
+ 2 files changed, 3 insertions(+), 12 deletions(-)
+
+commit 358670ee4bb541a571dc901a72cf258f70a81c56
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jul 12 11:00:41 2004 +0000
+
+    se XTime() from bt::Application instead of
+    Blackbox::getLastTime()... the former works and is correct, the latter
+    isn't.
+
+ src/Window.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit be36ffb834a33aef03ba9b7b1fdbdf6d98ee24d4
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jul 12 10:56:58 2004 +0000
+
+    remove the workspace-name-edit feature from Toolbar... it was never
+    really complete and never really worked, and noone seemed to complain.
+    since we now support editing ~/.blackboxrc while running, this feature
+    really isn't needed.
+
+ src/Toolbar.cc     | 131 ++-----------------------------------------------
+ src/Toolbar.hh     |   5 +-
+ src/Toolbarmenu.cc |  10 +---
+ 3 files changed, 5 insertions(+), 141 deletions(-)
+
+commit 6f478249bd21d174803cb77896ed20712a6a5afa
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jul 12 10:51:49 2004 +0000
+
+    remove empty constructors/destructors... if gcc complains that it can
+    inline them, that's gcc's problem, not ours
+
+ src/BlackboxResource.cc | 10 ----------
+ src/BlackboxResource.hh | 21 +++------------------
+ 2 files changed, 3 insertions(+), 28 deletions(-)
+
+commit 9ebb72865ed6f4ea46f0233601464d1c6ba46515
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jul 12 10:35:58 2004 +0000
+
+    add bt::Application::XTime()k, which returns the last timestamp
+    received from the X server
+
+ lib/Application.hh | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit d22ad562bf2548c25bb8a7363c5f6ef50a943040
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jul 8 13:07:42 2004 +0000
+
+    don't use a synchronous grab during menu handling... it's not really
+    necessary, and the last replay doesn't seem to work 100%
+
+    this results in a slight change in behavior, when clicking outside a
+    menu to close it, the click is no longer forwarded, it is discarded.
+    this means it is possible to click ANYWHERE on the screen to dismiss a
+    menu, without having to worry about what is under the pointer
+
+ lib/Application.cc | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
+
+commit 998cd5835e6a375d4aa58c950afd819c661883a6
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Jul 7 15:18:48 2004 +0000
+
+    add some new styles (all similar, just with different backgrounds) as
+    examples of the new/refined style format
+
+    the old styles are untouched, but no longer installed (until updated
+    or removed)
+
+ data/styles/Blue        | 72 +++++++++++++++++++++++++++++++++++++++++++++
+ data/styles/Gray        | 72 +++++++++++++++++++++++++++++++++++++++++++++
+ data/styles/Green       | 72 +++++++++++++++++++++++++++++++++++++++++++++
+ data/styles/Makefile.am |  3 +-
+ data/styles/Purple      | 72 +++++++++++++++++++++++++++++++++++++++++++++
+ data/styles/Red         | 72 +++++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 362 insertions(+), 1 deletion(-)
+
+commit b75c1446d0fd0f3501fa831200ddec48a8525c94
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jul 6 11:08:34 2004 +0000
+
+    don't need these flushes, remove them
+
+ src/Window.cc | 3 ---
+ 1 file changed, 3 deletions(-)
+
+commit 3b7d5fc1ae0308d0cf3848e7587656bafc18ca64
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jul 6 11:07:55 2004 +0000
+
+    fix potential crashes revealed by valgrind - the config and icon menus
+    should be deleted after their parents have been deleted
+
+ src/Screen.cc | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+commit 715b33ebd634e068f5a8cedc77e7fe1c3a35390f
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jul 5 15:36:50 2004 +0000
+
+    make sure the position is signed when centering the window... if the
+    width and height are larger than the screen, we get wrapping (since
+    the calculation is unsigned due to width and height being unsigned).
+
+    fixes bug 984037
+
+ src/Screen.cc | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+commit 86a49a40f998f3df7151b4a489cb8c97d8cfa72c
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jul 5 15:18:59 2004 +0000
+
+    if a slit client generates a configure request, we need to forward
+    this to the slit (instead of blindly applying the request)
+
+    this was introduced when i removed all *Request event handlers from
+    bt::EventHandler
+
+    fixes bug 984630
+
+ src/blackbox.cc | 53 ++++++++++++++++++++++++++++++++---------------------
+ 1 file changed, 32 insertions(+), 21 deletions(-)
+
+commit 965ee30b47ede05d17fcdf3832a21b5b712d376b
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jul 5 15:15:39 2004 +0000
+
+    add bt::Application::findEventHandler()
+
+ lib/Application.cc | 15 +++++++++++----
+ lib/Application.hh |  5 +++++
+ 2 files changed, 16 insertions(+), 4 deletions(-)
+
+commit e248579c4fd6d27d1f05b39b6226cae445eb379c
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 2 14:35:57 2004 +0000
+
+    fix a crash when releasing fonts with an empty fontname
+
+    fixes bug 912369
+
+ lib/Font.cc | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+commit 69b2912151dd56e0c282e8bc8cd136d40f95a5d8
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 2 12:39:07 2004 +0000
+
+    remove the bevelWidth, borderWidth and borderColor styles options,
+    they are no longer needed
+
+ src/BlackboxResource.cc |  9 ---------
+ src/BlackboxResource.hh | 10 +---------
+ src/Screen.cc           | 15 ++++++---------
+ 3 files changed, 7 insertions(+), 27 deletions(-)
+
+commit 955d2f77652fdcda495b8672e91567cf273a06c4
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 2 12:37:13 2004 +0000
+
+    1. oops, make sure we set the border color on the plate
+
+    2. True -> true and a comment
+
+ src/Window.cc | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+commit 857f701428f3b73f5f7ec344251ceb54dc22b4ca
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 2 12:31:23 2004 +0000
+
+    don't set the window border color, since we don't use window borders
+    any more
+
+ src/Window.cc | 19 -------------------
+ 1 file changed, 19 deletions(-)
+
+commit 80c55f8b75c39317b0f9435707ada631590f7719
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 2 12:26:45 2004 +0000
+
+    the foreground color for unfocused buttons should be fetched with
+    window.button.unfocus.foregroundColor, with a fallback to
+    window.button.unfocus.picColor
+
+ src/BlackboxResource.cc | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+commit 9b249a1a93c61f208396c778c0a243fd8d86265d
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 2 12:05:03 2004 +0000
+
+    don't use X11 borders on windows in BlackboxWindow... use a scheme
+    similar to menu, toolbar and slit.
+
+    styles will need to be updated, documentation and updates to
+    bstyleconvert are in the works
+
+ src/BlackboxResource.cc | 158 ++++++++++++-------
+ src/BlackboxResource.hh |   7 +-
+ src/Screen.cc           |  18 ++-
+ src/Window.cc           | 366 +++++++++++++++++++++++---------------------
+ src/Window.hh           |   3 +-
+ 5 files changed, 308 insertions(+), 244 deletions(-)
+
+commit e303464f1af11549aeb2436b4103223e611af244
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 2 11:59:20 2004 +0000
+
+    1. submenus should auto-delete by default, unless told not to... this
+    plugs several memleaks reported by valgrind
+
+    2. the configmenu should not be auto-delete
+
+ lib/Menu.cc       | 2 +-
+ src/Configmenu.cc | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+commit d77e9f5e68b52a0ece9f1887360e78df0b167dd6
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 2 11:29:20 2004 +0000
+
+    the comparison operators should be const functions
+
+ lib/Rect.hh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 64e65788240943e8baba65dce66a1d84d364ccb4
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 2 11:11:07 2004 +0000
+
+    workaround for g++ 3.4 bug: pass a temporary by reference in function
+    arguments results in g++ 3.4 incorrectly calling the copy constructor.
+    since bt::Pen inherits from bt::NoCopy, this fails with g++ 3.4 (but
+    not with other compilers)
+
+ src/Screen.cc | 18 +++++++-----------
+ src/Window.cc | 32 +++++++++++++++-----------------
+ 2 files changed, 22 insertions(+), 28 deletions(-)
+
+commit bf90374ab316b645f9a4a19ded34e52e3021f829
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 2 10:14:29 2004 +0000
+
+    plug some memory leaks found with valgrind
+
+ lib/Image.cc | 189 +++++++++++++++++++++++++++----------------------------
+ 1 file changed, 93 insertions(+), 96 deletions(-)
+
+commit 159e677fe5401759b96ba14ce8fe3b9390273228
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jul 2 07:57:59 2004 +0000
+
+    workaround for g++ 3.4 bug: pass a temporary by reference in function
+    arguments results in g++ 3.4 incorrectly calling the copy constructor.
+    since bt::Pen inherits from bt::NoCopy, this fails with g++ 3.4 (but
+    not with other compilers)
+
+ src/Toolbar.cc | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+commit 8100129f54c167d864eae7f5dec2d0ff697689d8
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jul 1 11:30:20 2004 +0000
+
+    remove i18n.* from the build, they are no longer used (and they no
+    longer work).
+
+    use DISTCLEANFILES instead of a distclean-local rule
+
+ lib/Makefile.am | 80 +++++++++++++++++++++++++----------------------------
+ 1 file changed, 38 insertions(+), 42 deletions(-)
+
+commit a00579c78d901234ab42494d6c555d47e605ee90
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jul 1 11:24:30 2004 +0000
+
+    don't show the delay submenu when the mouse leaves the menu
+
+ lib/Menu.cc | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
+
+commit 6326a0ebf4f2216c8e06b825925c60e334918136
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jul 1 11:18:49 2004 +0000
+
+    restart the timer every time the active item changes, not every time
+    the mouse moves
+
+ lib/Menu.cc | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+commit c25b660923eee3a0e46d3414ca74363b42314ed7
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jul 1 11:14:11 2004 +0000
+
+    keep better track of the menus that are delay shown/hidden...
+
+ lib/Menu.cc | 26 +++++++++++++++++++-------
+ 1 file changed, 19 insertions(+), 7 deletions(-)
+
+commit eb7f2789cfa91096947f3c3131a44b49ff607040
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jul 1 10:02:52 2004 +0000
+
+    silence warning from g++ 3.4: initialize all members of the struct
+
+ lib/Image.cc | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+commit fbd30820da99904cbb516da719263ad9151d8398
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jun 22 15:47:05 2004 +0000
+
+    for clarity, change *.Margin -> *.MarginWidth in ToolBar and Slit
+    styles (to be consistent with bt::Menu)
+
+ src/BlackboxResource.cc | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+commit 00e17ffb288e5c671adb7c5a043abf33474456b0
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jun 21 15:10:35 2004 +0000
+
+    don't crash if we select an item in a menu while a submenu is open.
+
+    to do this, we track the current submenu and active submenu
+    separately.  the current submenu (_current_submenu) is the submenu
+    that is currently visible.  the active submenu (_active_submenu) is
+    the submenu for the active item.
+
+    this makes the logic a bit easier to understand (for me at least)
+
+ lib/Menu.cc | 66 ++++++++++++++++++++++++++++++++++++++-------------------
+ lib/Menu.hh |  1 +
+ 2 files changed, 45 insertions(+), 22 deletions(-)
+
+commit 9c4f329d7c67933f5222f753b352b5a3519ff7f8
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jun 21 14:05:07 2004 +0000
+
+    don't process ConfigureRequest events using the normal
+    bt::EventHandler mechanism in bt::Application, since event is sent to
+    the window that selected for redirect (not the window that requested
+    the event).
+
+    this solves a race in where a ConfigureRequest is issued after a
+    MapRequest, but before blackbox has had a change to reparent the
+    client to the window frame... this configure request was passed to
+    BScreen, which blindly accepted the request (so that the client is
+    reconfigured while inside the frame)
+
+    it's not a good idea to handle any of the *Request events in
+    bt::Application, so we do this in Blackbox::process_events()
+
+    see bug 972731
+
+ lib/Application.cc  |  5 -----
+ lib/EventHandler.hh |  3 ---
+ src/Screen.cc       | 25 -------------------------
+ src/Screen.hh       |  1 -
+ src/blackbox.cc     | 30 ++++++++++++++++++++++++++++++
+ 5 files changed, 30 insertions(+), 34 deletions(-)
+
+commit 2c1c29ad75731b548e7cd9fcccb9411e3b46d48e
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jun 10 14:41:22 2004 +0000
+
+    be consistent with other user interfaces: pressing escape should close
+    one menu at a time, not the whole menu chain
+
+ lib/Menu.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 08a9e9ebc0b5e5deb3ab85b0beb2281ea8f025a5
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jun 1 09:48:17 2004 +0000
+
+    remove redundant pointer check
+
+ src/Window.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit fd5da03abb6a4241d375433cdc584e81a3630713
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jun 1 09:47:11 2004 +0000
+
+    compile
+
+ src/Window.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 91cc240a3b95bd52de5941f94a6fdd420bfbc42c
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Jun 1 09:45:06 2004 +0000
+
+    Transients must be on the same screen as their parent.  This prevents
+    crashes when using (for example) Konqueror on a multi-screen display,
+    where the browser is on screen 1 and various dialogs are shown on
+    screen 0.
+
+ src/Window.cc | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+commit 491bd8ea5bb72538bbd026c8b7a6b864138fb1fb
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Mar 18 09:38:14 2004 +0000
+
+    remove HAVE_PROCESS_H, we don't use this type of detection anymore...
+
+ lib/Util.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit c701a36b63addc8fe03043c384b8c5d4826d5275
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Mar 9 15:38:44 2004 +0000
+
+    after some thought and reading POSIX, it seems pointless for us to
+    trap fatal signals... they are fatal for a reason :)
+
+    rename the FATAL_SIGNAL run state to SIGNALLED, which is set when we
+    call bt::Application::process_signal()...  the run state is reset to
+    RUNNING if process_signal returns true and the run_state has not been
+    changed.  we still dump core when running into unhandled (aka unknown)
+    signals.
+
+    this should ensure that libbt users will have sane and proper signal
+    handling
+
+ lib/Application.cc | 47 +++++++++++++++++++----------------------------
+ lib/Application.hh |  2 +-
+ 2 files changed, 20 insertions(+), 29 deletions(-)
+
+commit e90ab639eafaaad0cd642eb7a7635549c944bc67
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Mar 9 09:59:14 2004 +0000
+
+    when a client's XA_WM_NORMAL_HINTS change, we need to constrain the
+    current geometry to the new min-size, max-size, base-size, size-inc
+    and aspect-ratio...
+
+    this fixes bug 893468 where xmms wouldn't properly shade/unshade
+
+ src/Window.cc | 24 ++++++++++++++++++------
+ 1 file changed, 18 insertions(+), 6 deletions(-)
+
+commit 91d5edcd2ddae39c815623d0535221d4f83b9d5c
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Mar 9 08:34:03 2004 +0000
+
+    fix vertical gradient rendering (again)...
+
+ lib/Image.cc | 30 ++++++++++++++----------------
+ 1 file changed, 14 insertions(+), 16 deletions(-)
+
+commit 05294b5719b901899ac4e45db286b7adf8553e84
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Mar 8 15:34:57 2004 +0000
+
+    create the slit and toolbar menus in BScreen and use them in
+    Configmenu, Slit and Toolbar
+
+    this saves memory and solves the crash described in bug 896889 where
+    disabling the toolbar from the toolbarmenu in the toolbar would crash
+    blackbox.
+
+    oddly enough, i couldn't reproduce this, but the bug is obvious when
+    looking at what the Toolbar destructor does - it deletes the
+    toolbarmenu, which means the hideAll() from
+    bt::Menu::buttonReleaseEvent() or ::keyPressEvent() would access freed
+    memory... hence the crash
+
+ src/Configmenu.cc |  8 ++------
+ src/Screen.cc     | 11 +++++++++--
+ src/Screen.hh     |  8 ++++++++
+ src/Slit.cc       | 16 +++++++---------
+ src/Slit.hh       |  6 ------
+ src/Toolbar.cc    |  9 ++-------
+ src/Toolbar.hh    |  4 ----
+ 7 files changed, 28 insertions(+), 34 deletions(-)
+
+commit ee578e7bdfccb73d19c24f66ac13b9da2e0099e2
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Mar 4 10:50:31 2004 +0000
+
+    oops... the empty_window should have None as the background pixmap (to
+    get the see-through effect)
+
+ src/Screen.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit 65d5c16b761467bfaa8e4ae9d31ae62afde189eb
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Mar 4 10:45:39 2004 +0000
+
+    speling
+
+ src/Screen.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit b8d597af9005b4351292189f2abdb94aa9624c55
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Mar 4 10:42:44 2004 +0000
+
+    update style/drawing code for the geometry window... we now draw using
+    textures, instead of relying solely on XSetWindowBackground*()
+
+    merge BScreen::showPosition() and ::showGeometry() into a single
+    function (since the code is identical except for the sprintf)
+
+ src/Screen.cc | 111 ++++++++++++++++++++++--------------------------------
+ src/Screen.hh |   5 ++-
+ src/Window.cc |   6 +--
+ 3 files changed, 52 insertions(+), 70 deletions(-)
+
+commit 198308222c7efa041e8c127251938f7aae001fa7
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Mar 4 10:03:39 2004 +0000
+
+    normal output should be send to stdout, not stderr
+
+ src/Screen.cc | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+commit 1050b8ac39f612630b544aa2c2f46f8a6f24a422
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Mar 4 08:48:53 2004 +0000
+
+    improve variable naming and grouping in the WindowStyle
+
+ src/BlackboxResource.cc |  58 ++++++++++++------------
+ src/BlackboxResource.hh |  12 ++---
+ src/Screen.cc           |   8 ++--
+ src/Toolbar.cc          |   2 +-
+ src/Window.cc           | 106 ++++++++++++++++++++++----------------------
+ 5 files changed, 94 insertions(+), 92 deletions(-)
+
+commit e52b0b7b5fa4a2a56f479ca4364488c0298a6b32
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Mar 4 08:39:06 2004 +0000
+
+    WindowFunctionFlags needs to be bigger than 8 bits
+
+ src/Window.hh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit c091550763334d1ff83c7614981316731ecdc79c
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Mar 3 15:36:39 2004 +0000
+
+    remove extra whitespace
+
+ lib/Menu.hh | 2 --
+ 1 file changed, 2 deletions(-)
+
+commit 54fe2eb6d15679f66b099edb81aac8270215be9c
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Mar 3 15:12:21 2004 +0000
+
+    get vertical gradients working
+
+ lib/Image.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 5e896a6aa0246024a280c837c6bfc78329aed536
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Mar 3 14:40:55 2004 +0000
+
+    s,bit_vector,vector<bool>,g
+
+    std::bit_vector is a compatibility class, std::vector<bool> is preferred
+
+ lib/Menu.cc   | 2 +-
+ lib/Menu.hh   | 2 +-
+ src/Screen.cc | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+commit 51fc5034284ff70618b5d813b0c854465108d6ab
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Mar 3 14:12:08 2004 +0000
+
+    a few things:
+
+    1. fix a race condition - a window could be destroyed in between when
+    we check for existance and when we actually grab the server... this
+    results in in the notorious ghost window which never goes away (except
+    by restarting)
+
+    2. windows that do not have the iconify function should not be
+    iconified in response to a WM_CHANGE_STATE message
+
+    3. add WindowFunctionFullScreen and turn it off for dialog, menu and
+    toolbar window types
+
+ src/Window.cc | 53 +++++++++++++++++++++++++++++++++--------------------
+ src/Window.hh |  4 +++-
+ 2 files changed, 36 insertions(+), 21 deletions(-)
+
+commit 429d7e652345d8b6402ea2279f4d40952d78df03
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Mar 3 13:01:41 2004 +0000
+
+    do not allow windows without WindowFunctionIconify to be iconified
+    when they are managed...
+
+ src/Window.cc | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit a4b2217a3e47ac56d616c6de922518b5af844722
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Mar 2 11:09:12 2004 +0000
+
+    fix a couple of bugs:
+
+    1. don't use resource.numberOfWorkspaces() during runtime... add
+    BScreen::workspaceCount() and use that instead (fixes a crash when
+    trying to change to a newly created or newly removed workspace).
+
+    2. when the user adds/removes workspaces via the workspaces menu,
+    automatically save the resources so that they are preserved across
+    restarts.
+
+ src/Screen.cc        | 32 ++++++++++++--------------------
+ src/Screen.hh        |  6 ++++--
+ src/Toolbar.cc       |  7 +++----
+ src/Windowmenu.cc    |  2 +-
+ src/Workspacemenu.cc |  6 +++++-
+ 5 files changed, 25 insertions(+), 28 deletions(-)
+
+commit 643c73ffa77f45bf0ae74c86c45c8ef3eb50f7ec
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Mar 2 10:43:50 2004 +0000
+
+    move the 'focus new windows' block to BScreen::addWindow()... it makes
+    more sense to have it here, and also solves a small problem where the
+    _NET_ACTIVE_WINDOW property would be updated before _NET_CLIENT_LIST
+    (which confuses some apps)
+
+ src/Screen.cc | 40 +++++++++++++++++++++-------------------
+ 1 file changed, 21 insertions(+), 19 deletions(-)
+
+commit 4a7b735d4524cec9dcf02c255c7d0ff54199f710
+Author: bradleyhughes <bradleyhughes>
+Date:   Tue Mar 2 08:16:49 2004 +0000
+
+    use the correct sign...
+
+ lib/Texture.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit a058ae72068456f299978774e127b9f7996cecf0
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Mar 1 11:49:49 2004 +0000
+
+    Frame.Margin -> Toolbar.Margin
+
+ src/BlackboxResource.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 2d29bb9b7032e4f684b837711bb0e2f1159e3d78
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Mar 1 11:32:19 2004 +0000
+
+    refactor the toolbar style code... use bt::Rect where possible to save
+    having to recalculate the positions/sizes in lots of different places.
+
+    finish making Toolbar follow the styling pattern set by bt::Menu:
+
+    toolbar                         - the texture of the toolbar itself
+            .color
+            .colorTo
+            .borderWidth
+            .borderColor
+
+    toolbar.label                   - workspace label texture
+            .color
+            .colorTo
+            .borderWidth
+            .borderColor
+
+    toolbar.windowLabel             - window label texture
+            .color
+            .colorTo
+            .borderWidth
+            .borderColor
+
+    toolbar.clock                   - clock label texture
+            .color
+            .colorTo
+            .borderWidth
+            .borderColor
+
+    toolbar.button                  - button texture
+            .color
+            .colorTo
+            .borderWidth
+            .borderColor
+
+    toolbar.button.pressed          - pressed button texture
+            .color
+            .colorTo
+            .borderWidth
+            .borderColor
+
+    toolbar.label.textColor         - workspace label text color
+    toolbar.windowLabel.textColor   - window label text color
+    toolbar.clock.textClolor        - clock label text color
+
+    toolbar.alignment               - text alignment for all labels
+
+    toolbar.marginWidth             - space around and between buttons
+    and labels
+    toolbar.label.marginWidth       - space around text in labels
+    toolbar.button.marginWidth      - space around bitmaps in buttons
+
+ src/BlackboxResource.cc | 127 +++++++++------
+ src/BlackboxResource.hh |  21 ++-
+ src/Toolbar.cc          | 368 +++++++++++++++++++++++---------------------
+ src/Toolbar.hh          |  14 +-
+ src/Window.hh           |   2 +-
+ 5 files changed, 296 insertions(+), 236 deletions(-)
+
+commit 3961829dd7a8ee0c1659ec75dc0b6282b4697952
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Mar 1 10:51:24 2004 +0000
+
+    increase the default pixmap cache size to 2mb
+
+ lib/PixmapCache.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 9adc4460c0fcfbc3516b19cd5797cf6fc4531d1b
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Feb 27 12:39:15 2004 +0000
+
+    if the clientList is empty, then the slit shouldn't exist
+    anymore... enforce this with a few asserts...
+
+    fix a free-memory-read in shutdown()... the while-loop checks for
+    clientList.isEmpty(), which is a problem when the last client is
+    removed (the slit is deleted, and clientList doesn't exist anymore).
+
+ src/Slit.cc | 107 +++++++++++++++++++++++++++-----------------------------
+ 1 file changed, 51 insertions(+), 56 deletions(-)
+
+commit b0805a968c96cc2cc24f40d10ef5820d65895279
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Feb 27 11:49:04 2004 +0000
+
+    make the slit stylable separately from the toolbar...
+
+ src/BlackboxResource.cc |  14 +++++-
+ src/BlackboxResource.hh |  11 +++++
+ src/Slit.cc             | 104 ++++++++++++++++++--------------------------
+ src/Slit.hh             |   5 ++-
+ 4 files changed, 69 insertions(+), 65 deletions(-)
+
+commit 66f5f41048c1066f538434f04ec3860db6c29154
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Feb 27 10:28:58 2004 +0000
+
+    fix right-to-left and bottom-to-top smart placement... oh how i love
+    these off-by-one errors
+
+ src/Screen.cc | 40 +++++++++++++++++++++-------------------
+ 1 file changed, 21 insertions(+), 19 deletions(-)
+
+commit 1c424f29262a4a1803f7c527f38e607f2024f822
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Feb 27 07:40:12 2004 +0000
+
+    kill the window frame around the client window...
+
+ src/BlackboxResource.cc | 38 ++++++++++----------------------------
+ src/BlackboxResource.hh |  4 ++--
+ src/Window.cc           | 44 ++++++++------------------------------------
+ src/Window.hh           |  3 +--
+ 4 files changed, 21 insertions(+), 68 deletions(-)
+
+commit d1b5a4f15f0c45d48c8871a49b80c42f66091dd9
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Feb 25 11:29:59 2004 +0000
+
+    fix 2 bugs:
+
+    1. setFullScreen() would not work if the new/old frame geometries were
+    the same... so we need to trick BlackboxWindow::configure() into
+    always working
+
+    2. BlackboxWindow::configureRequestEvent() would incorrectly ignore
+    move events if the window didn't support resizing due to incorrect
+    logic.  fix the logic, fix the bug!
+
+ src/Window.cc | 26 +++++++++++++++-----------
+ 1 file changed, 15 insertions(+), 11 deletions(-)
+
+commit 9e8b4aaee6645bd01022e5a947b310f411d3328b
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Feb 25 08:39:12 2004 +0000
+
+    EWMH expects the stacking list to be bottom-to-top
+
+ src/Screen.cc | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+commit 0375c1dbafba788a859742baa869c77b22be8344
+Author: shaleh <shaleh>
+Date:   Mon Feb 23 18:38:56 2004 +0000
+
+    Reorder the initializer.
+
+ lib/Image.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 23829b4a069a804d5e16c3b4307ba76952d922a9
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Feb 23 15:53:39 2004 +0000
+
+    remove Slit::setPlacement() and ::setDirection()... they are only
+    called from Configmenu, which already does the resource
+    setting/saving... all we need is Slit::reconfigure()
+
+ src/Slit.cc     | 14 --------------
+ src/Slit.hh     |  3 ---
+ src/Slitmenu.cc |  4 ++--
+ 3 files changed, 2 insertions(+), 19 deletions(-)
+
+commit 67d722bf6b9c9b0ec49decee143ffd6438c25a43
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Feb 23 15:49:03 2004 +0000
+
+    the Slit and Toolbar can be zero... don't call member functions unless
+    they exist
+
+ src/Slitmenu.cc    | 14 ++++++++++++--
+ src/Toolbarmenu.cc |  7 ++++++-
+ 2 files changed, 18 insertions(+), 3 deletions(-)
+
+commit ae74a8f7e727bbda39df626a041eef8286b6f664
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Feb 23 15:34:35 2004 +0000
+
+    add Blackbox::XGrabServer() and ::XUngrabServer(), which implement a
+    sort of ref-counted grab on the X server (since the Xlib functions
+    don't do this).  this allows us to optimize things like restarts and
+    workspace switching, so that we do only a single grab/ungrab (instead
+    of one grab/ungrab per managed window).
+
+ src/Screen.cc   |  8 ++++++++
+ src/Slit.cc     |  9 ++++-----
+ src/Window.cc   | 20 ++++++++++----------
+ src/blackbox.cc | 21 ++++++++++++++++++++-
+ src/blackbox.hh |  5 +++++
+ 5 files changed, 47 insertions(+), 16 deletions(-)
+
+commit f0b98b5bee61e9af75e56bb8e6746efe311dc850
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Feb 23 14:17:49 2004 +0000
+
+    don't restrict fullscreen to WindowTypeNormal only... i've actually
+    seen some programs with fullscreen WindowTypeDialog windows (ugh)
+
+ src/Window.cc | 27 +++++++++++----------------
+ 1 file changed, 11 insertions(+), 16 deletions(-)
+
+commit 637f07cd70896dfc4faa4369226601dca94ee698
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Feb 23 12:47:55 2004 +0000
+
+    fix horizontal gradient rendering
+
+ lib/Image.cc | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+commit f505c385e86bd42fbb95615954d918f3a30f6a4f
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Feb 23 11:00:51 2004 +0000
+
+    menu item margins should be zero if the frame margin is zero...
+
+ lib/Menu.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit eeec0af1018deca3ff6bb0584398f0ae29a3bb96
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Feb 13 16:28:48 2004 +0000
+
+    make the eventloop a bit more efficient by delivering already queued
+    events before flushing and trying to read more (i.e. don't always use
+    XPending, use XEventsQueued instead)
+
+ lib/Application.cc | 82 ++++++++++++++++++++++++++------------------------
+ 1 file changed, 43 insertions(+), 39 deletions(-)
+
+commit 020cb7cc9540ef286be46fb8c6082736f0183e61
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Feb 12 12:34:56 2004 +0000
+
+    allow the margin width to be zero (but no less than zero) in bt::Menu
+
+ lib/Menu.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 02d52a2cdad153cd16bbe08176d8c477c0f568ba
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Feb 9 11:57:25 2004 +0000
+
+    when we receive _NET_WM_CLOSE message for a window, don't close unless
+    we have WindowFunctionClose
+
+ src/Window.cc | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+commit e2b55eabef42fc43d3ac8e487759f48d32e74712
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Feb 9 11:47:53 2004 +0000
+
+    EWMH compliance: we do not support _NET_DESKTOP_GEOMETRY, so we
+    shouldn't advertise it.  However, even though we don't support it, the
+    spec says we should set _NET_DESKTOP_GEOMETRY and
+    _NET_DESKTOP_VIEWPORT to the size of the desktop and 0,0
+    (respectively)
+
+ src/Screen.cc | 43 +++++++++++++++++++++++++++++++++----------
+ 1 file changed, 33 insertions(+), 10 deletions(-)
+
+commit 7f9ac8e02a85cbc7b335a677956261d291ed497e
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Feb 9 11:43:59 2004 +0000
+
+    1. 64-bit cleanness: CARDINAL is stored as a 32bit entity in the
+    server, but the client should use 'long' to represent a CARDINAL (see
+    the Xlib manual).  We shouldn't rely on sizeof(int)==sizeof(long),
+    since we want libbt and blackbox to work on 64-bit machines
+
+    2. add some EWMH atoms/functions to support version 1.3 of the
+    specification
+
+ lib/Netwm.cc | 218 ++++++++++++++++++++++++++++++++++++++++++++++---------
+ lib/Netwm.hh | 129 ++++++++++++++++++++++++++------
+ 2 files changed, 290 insertions(+), 57 deletions(-)
+
+commit e9617f5cc4ac01d880cbf5da0aca0ef06f3dbf9f
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Feb 9 11:41:24 2004 +0000
+
+    small optimization: allocate the image data just before the image is
+    rendered, not when it is constructed
+
+ lib/Image.cc | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+commit 36a2e3a58a5c1c5ba5ee338d8110c52adf3adf3d
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Feb 9 09:53:36 2004 +0000
+
+    1. add new window function 'WindowFunctionChangeLayer'
+
+    2. add assert()s in the state changing functions to make sure we are
+    allowed to call them... this fixes bug 882739 (which is not limited to
+    setShaded)
+
+    3. only allow WindowTypeNormal windows to become fullscreen
+
+ src/Window.cc     | 198 +++++++++++++++++++++++++++++---------------------
+ src/Window.hh     |   6 +-
+ src/Windowmenu.cc |   8 +-
+ 3 files changed, 122 insertions(+), 90 deletions(-)
+
+commit c5a54c75e84256001540829e9de5c2009bcce73c
+Author: shaleh <shaleh>
+Date:   Fri Feb 6 07:17:42 2004 +0000
+
+    convert all styles to 0.70 styles with bstyleconvert
+
+ data/styles/Artwiz    | 4 ++--
+ data/styles/Cthulhain | 4 ++--
+ data/styles/Flux      | 4 ++--
+ data/styles/Minimal   | 4 ++--
+ data/styles/Nyz       | 4 ++--
+ data/styles/Operation | 4 ++--
+ data/styles/Outcomes  | 4 ++--
+ data/styles/Rampage   | 4 ++--
+ data/styles/Rancor    | 4 ++--
+ data/styles/Results   | 4 ++--
+ data/styles/Shade     | 4 ++--
+ data/styles/Spiff     | 4 ++--
+ data/styles/TDF       | 4 ++--
+ data/styles/Twice     | 4 ++--
+ 14 files changed, 28 insertions(+), 28 deletions(-)
+
+commit 3f0946678695321966528af5152303f23f6178b1
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Feb 5 07:29:05 2004 +0000
+
+    when unmanaging an iconic window, make sure we remove the icon menu entry
+
+ src/Screen.cc | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+commit ad6bc2d773863985b3348a664265773d0521934c
+Author: bradleyhughes <bradleyhughes>
+Date:   Wed Feb 4 13:45:06 2004 +0000
+
+    refactor BlackboxWindow::buttonPressEvent() a bit to get rid of
+    duplicated code...  this also fixes a problem with alt+button1 not
+    setting frame.grab_[xy] properly (due to a previous change).
+
+ src/Window.cc | 25 +++++++++----------------
+ 1 file changed, 9 insertions(+), 16 deletions(-)
+
+commit 4cba46a4e4d7f2b3cc548d9c2a9434df7c60bc95
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 26 15:20:02 2004 +0000
+
+    _NET_WM_DESKTOP is set by BlackboxWindow::setWorkspace(), there's no
+    need to do it again in ::setState()
+
+ src/Window.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit f569a0153a3b73f01692dc35e19083fa7b8e5aee
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 26 15:11:54 2004 +0000
+
+    when releasing (aka unmanaging aka restoring) a window, we must follow
+    the ICCCM rules.  section 4.1.3.1 states that the window manager must
+    remove WM_STATE once it (the window manager) is finished with the
+    window, which allows the client to reuse the window.
+
+    some cleanups resulted as part of this change:
+
+    the 'remap' parameter to BScreen::releaseWindow(),
+    BScreen::unmanageWindow() and BlackboxWindow::restore() was used oddly
+    and inconsistently, so we remove it... in BlackboxWindow::restore(),
+    we instead check to see if blackbox is shutting down to determine if
+    we should remove WM_STATE or not (and whether or not we should remap
+    the window).
+
+ src/Screen.cc   | 10 +++++-----
+ src/Screen.hh   |  4 ++--
+ src/Window.cc   | 50 +++++++++++++++++++++++++++++---------------------
+ src/Window.hh   |  2 +-
+ src/blackbox.cc |  6 ++++++
+ 5 files changed, 43 insertions(+), 29 deletions(-)
+
+commit 74bf192e6a59a190e1bca806e9b705361e1a7c31
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 26 13:09:50 2004 +0000
+
+    1. the color table size does not have to be a perfect cube
+    (i.e. 2*2*2, 3*3*3, 4*4*4, 5*5*5 or 6*6*6).  instead of specifying the
+    colors-per-channel, you specify the maximum number of colors to be
+    used, and bt::XColorTable will mathematically calculate the number of
+    colors for each individual channel (with 2:2:1 proportions).  It is
+    not an exact calculation, so more flexibility is gained.  for example,
+    you can have 108 colors (which translates to 6 red, 6 green and 3
+    blue) or 126 colors (6 red, 7 green and 3 blue), and so-on and so-on.
+
+    2. on StaticColor displays, the X server will preallocate the colormap
+    and nothing can change it... this means we should simply use as many
+    colors as we can, i.e. 256 (which is 8 red, 8 green and 4 blue).
+
+    3. we now allow for more than 8 bits per channel... for example, when
+    using the tight VNC server at 32bpp (which results in 11 bits red, 11
+    bits green and 10 bits blue).
+
+    4. we try to allocate colors on displays that allow us (i.e. GrayScale
+    and PseudoColor).  however, now we do not allocate colors for
+    StaticColor displays, instead we query the colormap for all colors
+    (since it will never change) and use those colors instead.
+
+    5. bt::Image::colorsPerChannel() and setColorsPerChannel() have been
+    replaced with bt::Image::maximumColors() and setMaximumColors().  The
+    default is 126 (6 red 7 green 3 blue), which should be enough to render
+    just about anything while leaving enough colors for other applications.
+    a new 'session.maximumColors' resource was added to allow the user to
+    tweak the maximum number of colors.
+
+    6. the session.cacheMax, session.cacheLife and session.colorsPerChannel
+    resources have no meaning anymore, so we remove them from the API and
+    don't read them anymore.
+
+    7. be smarter about deciding when to dither (and when not to)... we
+    only dither when using a visual that has fewer colors than our images
+    (8bits red, 8bits green and 8bits blue).
+
+ lib/Image.cc            | 202 ++++++++++++++++++++++++++++----------------
+ lib/Image.hh            |  14 +--
+ src/BlackboxResource.cc |  20 ++---
+ src/BlackboxResource.hh |   5 --
+ 4 files changed, 142 insertions(+), 99 deletions(-)
+
+commit fd9ed7cf8cd01514522596273ce6af579eb979a8
+Author: bradleyhughes <bradleyhughes>
+Date:   Mon Jan 26 12:46:45 2004 +0000
+
+    report what type of visual is found when managing a screen...
+
+ src/Screen.cc | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+commit 2696c14c9bfc4ac376e13bf6ffd7f00d63320797
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jan 16 16:17:20 2004 +0000
+
+    remove extra whitespace
+
+ src/blackbox.cc | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit 738661f10827e755d59553df751a48b8d49d5584
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jan 16 16:06:23 2004 +0000
+
+    1. make bt::PenCache a friend of bt::Color - this allows us to deallocate
+    colors in unused contexts when purging the pen cache.
+
+    2. add debugging knob to bt::PenCache
+
+    3. in blackbox, clear the font/pixmap/pen/color caches after
+    everything has been reconfigured, taking care to clear the pen cache
+    before the color cache so that all unused colors can be freed
+
+ lib/Color.hh    |  3 +++
+ lib/Pen.cc      | 35 +++++++++++++++++++++++++++++------
+ src/blackbox.cc |  9 ++++++---
+ 3 files changed, 38 insertions(+), 9 deletions(-)
+
+commit 1b720a1627eab1a3f0366146dcbeb901db28914a
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jan 16 15:29:32 2004 +0000
+
+    update to indicate what we actually support
+
+ COMPLIANCE | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+commit 2cecb6e6f72ec27604d4dbff4f7ef2ddfcc664a3
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jan 16 14:10:37 2004 +0000
+
+    for *printf(), use %u for 'unsigned int'
+
+ lib/Color.cc       |  8 ++++----
+ lib/PixmapCache.cc | 18 +++++++++---------
+ 2 files changed, 13 insertions(+), 13 deletions(-)
+
+commit e2b49c8bc33bf4f576f4b32eed537f82d939bacb
+Author: bradleyhughes <bradleyhughes>
+Date:   Fri Jan 16 08:43:44 2004 +0000
+
+    support _NET_WM_STRUT
+
+ COMPLIANCE    |  2 +-
+ src/Window.cc | 35 +++++++++++++++++++++--------------
+ 2 files changed, 22 insertions(+), 15 deletions(-)
+
+commit 4dba75756a6adcff04267c6894e766c42a53001b
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 15 15:36:24 2004 +0000
+
+    - for *printf(), use %u for 'unsigned int'
+
+    - disable Xft on 8bpp displays, since Xft fails to work at all...
+
+    - when releasing fontsets, don't use the screen of the (potentially)
+    loaded Xft font... this avoids hitting an assert when the fontcache
+    can't find the fontset on a specific screen.
+
+ lib/Font.cc | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+commit 2ee63f2d36e93bd4a07e9de1d3a2abcfa9a2e3bf
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 15 10:46:44 2004 +0000
+
+    ignore _NET_WM_STATE_HIDDEN state in properties/client-messages, the
+    wm sets this state, not the application
+
+ src/Window.cc | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+commit a139138c3315945c4b5e8e03dc9c242db3c403f7
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 15 10:33:00 2004 +0000
+
+    when activating windows that occupy all workspaces, don't call
+    BScreen::setCurrentWorkspace() with bt::BSENTINEL, otherwise we will
+    hit an assert.
+
+ src/Window.cc | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+commit 606d121339648a3159b9f1152c037ab0804002f8
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 15 10:21:41 2004 +0000
+
+    for *printf(), use %u for 'unsigned int'
+
+ src/BlackboxResource.cc | 138 ++++++++++++++++++++++----------------------
+ src/Screen.cc           |   4 +-
+ src/Workspace.cc        |   2 +-
+ 3 files changed, 72 insertions(+), 72 deletions(-)
+
+commit 3c3c6ae437749e0dad1354aba023fb94d1b502bb
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 15 09:44:08 2004 +0000
+
+    'typedef std::bit_vector IdBits' is unnecessary, remove it
+
+ lib/Menu.cc | 3 ++-
+ lib/Menu.hh | 3 +--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+commit 1add1dc56a470d403bda418c18ff673d18d5bc20
+Author: bradleyhughes <bradleyhughes>
+Date:   Thu Jan 15 09:16:08 2004 +0000
+
+    for *printf(), use %u and %lu for 'unsigned int' and 'unsigned long',
+    respectively
+
+ lib/Application.cc | 2 +-
+ lib/Font.cc        | 2 +-
+ lib/Menu.cc        | 2 +-
+ lib/Pen.cc         | 4 ++--
+ lib/PixmapCache.cc | 4 ++--
+ 5 files changed, 7 insertions(+), 7 deletions(-)
+
+commit 34514cb30308ed1492f65598eed4effd61348cd4
+Author: shaleh <shaleh>
+Date:   Wed Jan 14 18:31:59 2004 +0000
+
+    revert cast change, I misread the code originally.  Sorry Brad.
+
+ lib/Font.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 4750f162fa28f709df12ac94e14e83b9cd177a1c
+Author: shaleh <shaleh>
+Date:   Wed Jan 14 18:20:44 2004 +0000
+
+    backed out change to make splash screens be LAYER_ABOVE.
+
+ src/Window.cc | 1 -
+ 1 file changed, 1 deletion(-)

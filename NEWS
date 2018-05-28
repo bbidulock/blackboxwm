@@ -1,13 +1,52 @@
-blackbox -- history of user-visible changes.  2016-07-10
+blackbox -- history of user-visible changes.  2018-05-28
+
+Release blackbox-0.73 released 2018-05-28
+-----------------------------------------
+
+git shortlog -e -n -w80,6,8 0.73...HEAD
+
+
+
+
+Release blackbox-0.73 released 2018-05-28
+-----------------------------------------
+
+git shortlog -e -n -w80,6,8 0.72...0.73
+
+Brian Bidulock <bidulock@openss7.org> (15):
+      zero errno when not using it
+      silent rules with /usr prefix
+      add branch to substitution
+      add more checks
+      update make flags
+      silent now default
+      tweaks
+      add some ignores
+      better build
+      update install file
+      initialize XKEYBOARD
+      update po files
+      become child subreaper and session leader
+      Merge branch 'master' of github.com:bbidulock/blackboxwm
+      prctl is linux-specific
+
+Brian Bidulock <bidulock@openss7.com> (1):
+      Merge pull request #13 from psolyca/master
+
+Damien Gaignon <damien.gaignon@gmail.com> (1):
+      Add errno.h as include
+
 
 Release blackbox-0.72 released 2016-07-10
 -----------------------------------------
 
 git shortlog -e -n -w80,6,8 0.71.2...0.72
 
-Brian Bidulock <bidulock@openss7.org> (2):
+Brian Bidulock <bidulock@openss7.org> (4):
       simplify distribution
       update po files
+      update release files
+      update .po files
 
 
 Release blackbox-0.71.2 released 2016-02-10
@@ -124,31 +163,4 @@ DeltaResero <deltaresero@zoho.com> (7):
 
 Johannes Winkelmann <jw@smts.ch> (1):
       Add splitvertical gradient
-
-
-Release blackbox-0.70.2 released 2013-10-03
--------------------------------------------
-
-git shortlog -e -n -w80,6,8 0.70.2.4...0.70.2
-
-Brian Bidulock <bidulock@openss7.org> (19):
-      marked more EWMH support
-      added support for _NET_WM_WINDOW_TYPE_NOTIFICATION
-      add support for _NET_WM_STRUT_PARTIAL
-      add missing EWMH atoms
-      prepare for _NET_SHOWING_DESKTOP support
-      added WM_Sn MANAGER selection compliance
-      add support for additional _NET_WM_WINDOW_TYPEs
-      more EWMH support: all types, states and actions
-      tweak compliance
-      correct typo
-      fix _NET_DESKTOP_NAMES bug
-      added support for _NET_FRAME_EXTENTS
-      support _NET_WM_USER_TIME/_NET_WM_USER_TIME_WINDOW
-      prepare to support _NET_STARTUP_ID and friends
-      minor corrections to _NET_SUPPORTED and COMPLIANCE
-      preparations for release
-      update NEWS for release
-      update release files
-      should not be used anymore
 
