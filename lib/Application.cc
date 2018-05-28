@@ -50,7 +50,7 @@
 #include <cstdlib>
 #include <string.h>
 #include <unistd.h>
-
+#include <errno.h>
 
 #if defined(__GNUC__)
 #  if __GNUC__ == 3 && __GNUC_MINOR__ == 3
