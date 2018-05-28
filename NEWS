@@ -13,7 +13,7 @@ Release blackbox-0.73 released 2018-05-28
 
 git shortlog -e -n -w80,6,8 0.72...0.73
 
-Brian Bidulock <bidulock@openss7.org> (15):
+Brian Bidulock <bidulock@openss7.org> (17):
       zero errno when not using it
       silent rules with /usr prefix
       add branch to substitution
@@ -29,6 +29,8 @@ Brian Bidulock <bidulock@openss7.org> (15):
       become child subreaper and session leader
       Merge branch 'master' of github.com:bbidulock/blackboxwm
       prctl is linux-specific
+      update po files
+      update release files
 
 Brian Bidulock <bidulock@openss7.com> (1):
       Merge pull request #13 from psolyca/master

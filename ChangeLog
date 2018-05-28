@@ -1,5 +1,52 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit a8c5db9783f79b92f90c5740a9363285b546db8d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 28 01:45:34 2018 -0600
+
+    update release files
+
+ AUTHORS      |    4 +-
+ ChangeLog    | 3775 +++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ NEWS         |   70 +-
+ README       |   26 +-
+ README.md    |   26 +-
+ configure.ac |   10 +-
+ 6 files changed, 3849 insertions(+), 62 deletions(-)
+
+commit 496fc6b9f6c7c12ccfdc2066c38af28286c9e21f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 28 01:45:03 2018 -0600
+
+    update po files
+
+ po/blackbox.pot | 24 ++++++++++++------------
+ po/da.po        | 22 +++++++++++-----------
+ po/de.po        | 22 +++++++++++-----------
+ po/es.po        | 22 +++++++++++-----------
+ po/es_AR.po     | 22 +++++++++++-----------
+ po/et.po        | 22 +++++++++++-----------
+ po/fr.po        | 22 +++++++++++-----------
+ po/hu.po        | 22 +++++++++++-----------
+ po/it.po        | 22 +++++++++++-----------
+ po/ja.po        | 22 +++++++++++-----------
+ po/ko.po        | 22 +++++++++++-----------
+ po/lv.po        | 22 +++++++++++-----------
+ po/nl.po        | 22 +++++++++++-----------
+ po/no.po        | 22 +++++++++++-----------
+ po/pl.po        | 22 +++++++++++-----------
+ po/pt_BR.po     | 22 +++++++++++-----------
+ po/ro.po        | 22 +++++++++++-----------
+ po/ru.po        | 22 +++++++++++-----------
+ po/sk.po        | 22 +++++++++++-----------
+ po/sl.po        | 22 +++++++++++-----------
+ po/sv.po        | 22 +++++++++++-----------
+ po/tr.po        | 22 +++++++++++-----------
+ po/uk.po        | 22 +++++++++++-----------
+ po/zh_CN.po     | 22 +++++++++++-----------
+ po/zh_TW.po     | 22 +++++++++++-----------
+ 25 files changed, 276 insertions(+), 276 deletions(-)
+
 commit 5d69e1fd4c08bb8992571ecebee6bf7b0df2928f
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Mon May 28 01:00:17 2018 -0600
@@ -8641,21 +8688,3 @@ Date:   Thu Jan 15 09:16:08 2004 +0000
  lib/Pen.cc         | 4 ++--
  lib/PixmapCache.cc | 4 ++--
  5 files changed, 7 insertions(+), 7 deletions(-)
-
-commit 34514cb30308ed1492f65598eed4effd61348cd4
-Author: shaleh <shaleh>
-Date:   Wed Jan 14 18:31:59 2004 +0000
-
-    revert cast change, I misread the code originally.  Sorry Brad.
-
- lib/Font.cc | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-commit 4750f162fa28f709df12ac94e14e83b9cd177a1c
-Author: shaleh <shaleh>
-Date:   Wed Jan 14 18:20:44 2004 +0000
-
-    backed out change to make splash screens be LAYER_ABOVE.
-
- src/Window.cc | 1 -
- 1 file changed, 1 deletion(-)
