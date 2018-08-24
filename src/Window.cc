@@ -186,6 +186,14 @@ static void update_decorations(WindowDecorationFlags &decorations,
   // disable shade if we do not have a titlebar
   if (!(decorations & WindowDecorationTitlebar))
     functions &= ~WindowFunctionShade;
+  
+  // Remove decorations for windows in fullscreen mode
+  if (ewmh.fullscreen) {
+    decorations = NoWindowDecorations;
+    functions &= ~(WindowFunctionMove |
+                   WindowFunctionResize |
+                   WindowFunctionShade);
+  }
 
   // disable grips and maximize if we have a fixed size window
   if ((wmnormal.flags & (PMinSize|PMaxSize)) == (PMinSize|PMaxSize)
