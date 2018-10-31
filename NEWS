@@ -13,7 +13,7 @@ Release blackbox-0.74 released 2018-10-31
 
 git shortlog -e -n -w80,6,8 0.73...0.74
 
-Brian Bidulock <bidulock@openss7.org> (7):
+Brian Bidulock <bidulock@openss7.org> (9):
       update po files
       add a release file
       remove bashisms from gennews.sh
@@ -21,6 +21,8 @@ Brian Bidulock <bidulock@openss7.org> (7):
       5-part AC_INIT and prefer asciidoc to asciidoctor
       generate and distribute release file
       add release files to .gitignore
+      update po files
+      update release files
 
 Brian Bidulock <bidulock@openss7.com> (1):
       Merge pull request #19 from vl-80/fullscreen_fix

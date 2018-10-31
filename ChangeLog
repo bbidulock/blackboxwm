@@ -1,5 +1,52 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit adcffef44435e5c68c8f144dc58cbc673e4818bf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 31 02:41:15 2018 -0600
+
+    update release files
+
+ AUTHORS      |   3 +-
+ ChangeLog    | 236 +++++++++++++++++++++++++++----------------------------
+ NEWS         |  57 +++++++++++++-
+ README       |  26 +++---
+ README.md    |  26 +++---
+ configure.ac |   8 +-
+ 6 files changed, 203 insertions(+), 153 deletions(-)
+
+commit 8f8891396aa99f1b84c1888cbd68833496ee9574
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 31 02:40:18 2018 -0600
+
+    update po files
+
+ po/blackbox.pot | 6 +++---
+ po/da.po        | 4 ++--
+ po/de.po        | 4 ++--
+ po/es.po        | 4 ++--
+ po/es_AR.po     | 4 ++--
+ po/et.po        | 4 ++--
+ po/fr.po        | 4 ++--
+ po/hu.po        | 4 ++--
+ po/it.po        | 4 ++--
+ po/ja.po        | 4 ++--
+ po/ko.po        | 4 ++--
+ po/lv.po        | 4 ++--
+ po/nl.po        | 4 ++--
+ po/no.po        | 4 ++--
+ po/pl.po        | 4 ++--
+ po/pt_BR.po     | 4 ++--
+ po/ro.po        | 4 ++--
+ po/ru.po        | 4 ++--
+ po/sk.po        | 4 ++--
+ po/sl.po        | 4 ++--
+ po/sv.po        | 4 ++--
+ po/tr.po        | 4 ++--
+ po/uk.po        | 4 ++--
+ po/zh_CN.po     | 4 ++--
+ po/zh_TW.po     | 4 ++--
+ 25 files changed, 51 insertions(+), 51 deletions(-)
+
 commit 4c0a453c3ab976352e49e0129976973b7c9f1ef6
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Wed Oct 31 02:32:41 2018 -0600
@@ -8670,21 +8717,3 @@ Date:   Mon Jan 26 13:09:50 2004 +0000
  src/BlackboxResource.cc |  20 ++---
  src/BlackboxResource.hh |   5 --
  4 files changed, 142 insertions(+), 99 deletions(-)
-
-commit fd9ed7cf8cd01514522596273ce6af579eb979a8
-Author: bradleyhughes <bradleyhughes>
-Date:   Mon Jan 26 12:46:45 2004 +0000
-
-    report what type of visual is found when managing a screen...
-
- src/Screen.cc | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
-
-commit 2696c14c9bfc4ac376e13bf6ffd7f00d63320797
-Author: bradleyhughes <bradleyhughes>
-Date:   Fri Jan 16 16:17:20 2004 +0000
-
-    remove extra whitespace
-
- src/blackbox.cc | 1 -
- 1 file changed, 1 deletion(-)
