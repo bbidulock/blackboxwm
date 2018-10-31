@@ -1,11 +1,32 @@
-blackbox -- history of user-visible changes.  2018-05-28
+blackbox -- history of user-visible changes.  2018-10-31
 
-Release blackbox-0.73 released 2018-05-28
+Release blackbox-0.74 released 2018-10-31
 -----------------------------------------
 
-git shortlog -e -n -w80,6,8 0.73...HEAD
+git shortlog -e -n -w80,6,8 0.74...HEAD
 
 
+
+
+Release blackbox-0.74 released 2018-10-31
+-----------------------------------------
+
+git shortlog -e -n -w80,6,8 0.73...0.74
+
+Brian Bidulock <bidulock@openss7.org> (7):
+      update po files
+      add a release file
+      remove bashisms from gennews.sh
+      make autogen.sh handle gnits and remove bashisms
+      5-part AC_INIT and prefer asciidoc to asciidoctor
+      generate and distribute release file
+      add release files to .gitignore
+
+Brian Bidulock <bidulock@openss7.com> (1):
+      Merge pull request #19 from vl-80/fullscreen_fix
+
+VL-80 <vl-80@users.noreply.github.com> (1):
+      Fix fullscreen mode for non-maximized windows
 
 
 Release blackbox-0.73 released 2018-05-28
@@ -13,7 +34,7 @@ Release blackbox-0.73 released 2018-05-28
 
 git shortlog -e -n -w80,6,8 0.72...0.73
 
-Brian Bidulock <bidulock@openss7.org> (17):
+Brian Bidulock <bidulock@openss7.org> (18):
       zero errno when not using it
       silent rules with /usr prefix
       add branch to substitution
@@ -30,6 +51,7 @@ Brian Bidulock <bidulock@openss7.org> (17):
       Merge branch 'master' of github.com:bbidulock/blackboxwm
       prctl is linux-specific
       update po files
+      update release files
       update release files
 
 Brian Bidulock <bidulock@openss7.com> (1):
@@ -165,4 +187,31 @@ DeltaResero <deltaresero@zoho.com> (7):
 
 Johannes Winkelmann <jw@smts.ch> (1):
       Add splitvertical gradient
+
+
+Release blackbox-0.70.2 released 2013-10-03
+-------------------------------------------
+
+git shortlog -e -n -w80,6,8 0.70.2.4...0.70.2
+
+Brian Bidulock <bidulock@openss7.org> (19):
+      marked more EWMH support
+      added support for _NET_WM_WINDOW_TYPE_NOTIFICATION
+      add support for _NET_WM_STRUT_PARTIAL
+      add missing EWMH atoms
+      prepare for _NET_SHOWING_DESKTOP support
+      added WM_Sn MANAGER selection compliance
+      add support for additional _NET_WM_WINDOW_TYPEs
+      more EWMH support: all types, states and actions
+      tweak compliance
+      correct typo
+      fix _NET_DESKTOP_NAMES bug
+      added support for _NET_FRAME_EXTENTS
+      support _NET_WM_USER_TIME/_NET_WM_USER_TIME_WINDOW
+      prepare to support _NET_STARTUP_ID and friends
+      minor corrections to _NET_SUPPORTED and COMPLIANCE
+      preparations for release
+      update NEWS for release
+      update release files
+      should not be used anymore
 

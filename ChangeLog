@@ -1,5 +1,123 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 4c0a453c3ab976352e49e0129976973b7c9f1ef6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 31 02:32:41 2018 -0600
+
+    add release files to .gitignore
+
+ .gitignore | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit 0c56d91d5f7032d5aa795d5aaa015a4bfbee644b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 31 02:32:14 2018 -0600
+
+    generate and distribute release file
+
+ Makefile.am | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
+
+commit aa8550a8b09b71000c44cdd774e41cc569a2daf4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 31 02:31:23 2018 -0600
+
+    5-part AC_INIT and prefer asciidoc to asciidoctor
+
+ configure.ac | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+commit a0e8d3e693ac7e649bedf0c2f7fbab414ddd1c43
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 31 02:29:33 2018 -0600
+
+    make autogen.sh handle gnits and remove bashisms
+
+ autogen.sh | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+commit 8af36db7cd88b83ee7236982c6a28f0ffeee4998
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 31 02:28:54 2018 -0600
+
+    remove bashisms from gennews.sh
+
+ gennews.sh | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+commit 58751275c0eeb9ac914ef7b76a2d0fc0434d9826
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 31 02:28:23 2018 -0600
+
+    add a release file
+
+ RELEASE.md | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+commit 35571f1fee4cac77cc953a74d41d2d153c60104e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 31 02:07:18 2018 -0600
+
+    update po files
+
+ po/blackbox.pot | 30 +++++++++++++++---------------
+ po/da.po        | 28 ++++++++++++++--------------
+ po/de.po        | 28 ++++++++++++++--------------
+ po/es.po        | 28 ++++++++++++++--------------
+ po/es_AR.po     | 28 ++++++++++++++--------------
+ po/et.po        | 28 ++++++++++++++--------------
+ po/fr.po        | 28 ++++++++++++++--------------
+ po/hu.po        | 28 ++++++++++++++--------------
+ po/it.po        | 28 ++++++++++++++--------------
+ po/ja.po        | 28 ++++++++++++++--------------
+ po/ko.po        | 28 ++++++++++++++--------------
+ po/lv.po        | 28 ++++++++++++++--------------
+ po/nl.po        | 28 ++++++++++++++--------------
+ po/no.po        | 28 ++++++++++++++--------------
+ po/pl.po        | 28 ++++++++++++++--------------
+ po/pt_BR.po     | 28 ++++++++++++++--------------
+ po/ro.po        | 28 ++++++++++++++--------------
+ po/ru.po        | 28 ++++++++++++++--------------
+ po/sk.po        | 28 ++++++++++++++--------------
+ po/sl.po        | 28 ++++++++++++++--------------
+ po/sv.po        | 28 ++++++++++++++--------------
+ po/tr.po        | 28 ++++++++++++++--------------
+ po/uk.po        | 28 ++++++++++++++--------------
+ po/zh_CN.po     | 28 ++++++++++++++--------------
+ po/zh_TW.po     | 28 ++++++++++++++--------------
+ 25 files changed, 351 insertions(+), 351 deletions(-)
+
+commit 3edbd732abb724b4c84c9f9c68a35a613ff3bd51
+Merge: 9fac822 5cfae85
+Author: Brian Bidulock <bidulock@openss7.com>
+Date:   Fri Aug 24 01:20:38 2018 -0600
+
+    Merge pull request #19 from vl-80/fullscreen_fix
+
+    Fix fullscreen mode for non-maximized windows
+
+commit 5cfae8525d55b24bc75c4673cf6b0fbaf8da60dd
+Author: VL-80 <vl-80@users.noreply.github.com>
+Date:   Tue Aug 21 20:27:00 2018 -0400
+
+    Fix fullscreen mode for non-maximized windows
+
+    Calling update_decorations() should not enable decorations for windows
+    in fullscreen mode.
+
+ src/Window.cc | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+commit 9fac8228dc257ac8893cefd190fe30fde8adab60
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 28 02:17:48 2018 -0600
+
+    update release files
+
+ ChangeLog | 65 ++++++++++++++++++++++++++++++++++++++++++-----------------
+ NEWS      |  4 +++-
+ 2 files changed, 50 insertions(+), 19 deletions(-)
+
 commit a8c5db9783f79b92f90c5740a9363285b546db8d
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Mon May 28 01:45:34 2018 -0600
@@ -8570,121 +8688,3 @@ Date:   Fri Jan 16 16:17:20 2004 +0000
 
  src/blackbox.cc | 1 -
  1 file changed, 1 deletion(-)
-
-commit 738661f10827e755d59553df751a48b8d49d5584
-Author: bradleyhughes <bradleyhughes>
-Date:   Fri Jan 16 16:06:23 2004 +0000
-
-    1. make bt::PenCache a friend of bt::Color - this allows us to deallocate
-    colors in unused contexts when purging the pen cache.
-
-    2. add debugging knob to bt::PenCache
-
-    3. in blackbox, clear the font/pixmap/pen/color caches after
-    everything has been reconfigured, taking care to clear the pen cache
-    before the color cache so that all unused colors can be freed
-
- lib/Color.hh    |  3 +++
- lib/Pen.cc      | 35 +++++++++++++++++++++++++++++------
- src/blackbox.cc |  9 ++++++---
- 3 files changed, 38 insertions(+), 9 deletions(-)
-
-commit 1b720a1627eab1a3f0366146dcbeb901db28914a
-Author: bradleyhughes <bradleyhughes>
-Date:   Fri Jan 16 15:29:32 2004 +0000
-
-    update to indicate what we actually support
-
- COMPLIANCE | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-commit 2cecb6e6f72ec27604d4dbff4f7ef2ddfcc664a3
-Author: bradleyhughes <bradleyhughes>
-Date:   Fri Jan 16 14:10:37 2004 +0000
-
-    for *printf(), use %u for 'unsigned int'
-
- lib/Color.cc       |  8 ++++----
- lib/PixmapCache.cc | 18 +++++++++---------
- 2 files changed, 13 insertions(+), 13 deletions(-)
-
-commit e2b49c8bc33bf4f576f4b32eed537f82d939bacb
-Author: bradleyhughes <bradleyhughes>
-Date:   Fri Jan 16 08:43:44 2004 +0000
-
-    support _NET_WM_STRUT
-
- COMPLIANCE    |  2 +-
- src/Window.cc | 35 +++++++++++++++++++++--------------
- 2 files changed, 22 insertions(+), 15 deletions(-)
-
-commit 4dba75756a6adcff04267c6894e766c42a53001b
-Author: bradleyhughes <bradleyhughes>
-Date:   Thu Jan 15 15:36:24 2004 +0000
-
-    - for *printf(), use %u for 'unsigned int'
-
-    - disable Xft on 8bpp displays, since Xft fails to work at all...
-
-    - when releasing fontsets, don't use the screen of the (potentially)
-    loaded Xft font... this avoids hitting an assert when the fontcache
-    can't find the fontset on a specific screen.
-
- lib/Font.cc | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
-
-commit 2ee63f2d36e93bd4a07e9de1d3a2abcfa9a2e3bf
-Author: bradleyhughes <bradleyhughes>
-Date:   Thu Jan 15 10:46:44 2004 +0000
-
-    ignore _NET_WM_STATE_HIDDEN state in properties/client-messages, the
-    wm sets this state, not the application
-
- src/Window.cc | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
-
-commit a139138c3315945c4b5e8e03dc9c242db3c403f7
-Author: bradleyhughes <bradleyhughes>
-Date:   Thu Jan 15 10:33:00 2004 +0000
-
-    when activating windows that occupy all workspaces, don't call
-    BScreen::setCurrentWorkspace() with bt::BSENTINEL, otherwise we will
-    hit an assert.
-
- src/Window.cc | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-commit 606d121339648a3159b9f1152c037ab0804002f8
-Author: bradleyhughes <bradleyhughes>
-Date:   Thu Jan 15 10:21:41 2004 +0000
-
-    for *printf(), use %u for 'unsigned int'
-
- src/BlackboxResource.cc | 138 ++++++++++++++++++++++----------------------
- src/Screen.cc           |   4 +-
- src/Workspace.cc        |   2 +-
- 3 files changed, 72 insertions(+), 72 deletions(-)
-
-commit 3c3c6ae437749e0dad1354aba023fb94d1b502bb
-Author: bradleyhughes <bradleyhughes>
-Date:   Thu Jan 15 09:44:08 2004 +0000
-
-    'typedef std::bit_vector IdBits' is unnecessary, remove it
-
- lib/Menu.cc | 3 ++-
- lib/Menu.hh | 3 +--
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-commit 1add1dc56a470d403bda418c18ff673d18d5bc20
-Author: bradleyhughes <bradleyhughes>
-Date:   Thu Jan 15 09:16:08 2004 +0000
-
-    for *printf(), use %u and %lu for 'unsigned int' and 'unsigned long',
-    respectively
-
- lib/Application.cc | 2 +-
- lib/Font.cc        | 2 +-
- lib/Menu.cc        | 2 +-
- lib/Pen.cc         | 4 ++--
- lib/PixmapCache.cc | 4 ++--
- 5 files changed, 7 insertions(+), 7 deletions(-)

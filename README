@@ -1,9 +1,9 @@
-[blackbox -- read me first file.  2018-05-28]: #
+[blackbox -- read me first file.  2018-10-31]: #
 
 blackbox
 ===============
 
-Package `blackbox-0.73` was released under MIT license 2018-05-28.
+Package `blackbox-0.74` was released under MIT license 2018-10-31.
 
 This is a fork of the original blackbox CVS that is on [Sourceforge][12].
 This fork is hosted on [GitHub][2].  What it includes is all changes made
@@ -15,7 +15,7 @@ other GitHub forks.  It also includes enhanced EWMH/ICCCM compliance.
 Release
 -------
 
-This is the `blackbox-0.73` package, released 2018-05-28.  This release, and
+This is the `blackbox-0.74` package, released 2018-10-31.  This release, and
 the latest version, can be obtained from [GitHub][1], using a command such as:
 
     $> git clone https://github.com/bbidulock/blackboxwm.git
@@ -113,16 +113,16 @@ Report issues on GitHub [here][2].
 
 [1]: https://github.com/bbidulock/blackboxwm
 [2]: https://github.com/bbidulock/blackboxwm/issues
-[3]: https://github.com/bbidulock/blackboxwm/blob/0.73/NEWS
-[4]: https://github.com/bbidulock/blackboxwm/blob/0.73/ChangeLog
-[5]: https://github.com/bbidulock/blackboxwm/blob/0.73/TODO
-[6]: https://github.com/bbidulock/blackboxwm/blob/0.73/COMPLIANCE
-[7]: https://github.com/bbidulock/blackboxwm/blob/0.73/INSTALL
-[8]: https://github.com/bbidulock/blackboxwm/blob/0.73/LICENSE
-[9]: https://github.com/bbidulock/blackboxwm/blob/0.73/COPYING
-[9]: https://github.com/bbidulock/blackboxwm/blob/0.73/data/README
-[10]: https://github.com/bbidulock/blackboxwm/blob/0.73/data/README.menu
-[11]: https://github.com/bbidulock/blackboxwm/blob/0.73/data/README.style
+[3]: https://github.com/bbidulock/blackboxwm/blob/0.74/NEWS
+[4]: https://github.com/bbidulock/blackboxwm/blob/0.74/ChangeLog
+[5]: https://github.com/bbidulock/blackboxwm/blob/0.74/TODO
+[6]: https://github.com/bbidulock/blackboxwm/blob/0.74/COMPLIANCE
+[7]: https://github.com/bbidulock/blackboxwm/blob/0.74/INSTALL
+[8]: https://github.com/bbidulock/blackboxwm/blob/0.74/LICENSE
+[9]: https://github.com/bbidulock/blackboxwm/blob/0.74/COPYING
+[9]: https://github.com/bbidulock/blackboxwm/blob/0.74/data/README
+[10]: https://github.com/bbidulock/blackboxwm/blob/0.74/data/README.menu
+[11]: https://github.com/bbidulock/blackboxwm/blob/0.74/data/README.style
 [12]: http://blackboxwm.sourceforge.net
 [13]: http://bbkeys.sourceforge.net
 [14]: http://bbconf.sourceforge.net
