@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: blackbox 0.70.2.28\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm/issues\n"
-"POT-Creation-Date: 2018-05-28 01:41-0600\n"
+"POT-Creation-Date: 2018-10-31 02:04-0600\n"
 "PO-Revision-Date: 2014-08-29 13:17-0600\n"
 "Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
 "Language-Team: Polish\n"
@@ -458,68 +458,68 @@ msgstr "%s: [stylesdir/stylesmenu] błąd, '%s' nie jest katalogiem\n"
 msgid "%s: [workspaces] error, no menu label defined\n"
 msgstr "%s: [workspaces] błąd, brak etykiety menu\n"
 
-#: src/Window.cc:536
+#: src/Window.cc:544
 msgid "Unnamed"
 msgstr "Bez nazwy"
 
-#: src/Window.cc:1006
+#: src/Window.cc:1014
 #, c-format
 msgid "BlackboxWindow::BlackboxWindow(): creating 0x%lx\n"
 msgstr "BlackboxWindow::BlackboxWindow(): tworzę 0x%lx\n"
 
-#: src/Window.cc:1035
+#: src/Window.cc:1043
 #, c-format
 msgid "BlackboxWindow::BlackboxWindow(): XGetWindowAttributes failed\n"
 msgstr ""
 "BlackboxWindow::BlackboxWindow(): nieudane wywołanie XGetWindowAttributres\n"
 
-#: src/Window.cc:1300
+#: src/Window.cc:1308
 #, c-format
 msgid "BlackboxWindow::~BlackboxWindow: destroying 0x%lx\n"
 msgstr ""
 
-#: src/Window.cc:2346
+#: src/Window.cc:2354
 #, c-format
 msgid "%s -- assumed: (%d, %d), real: (%d, %d)\n"
 msgstr ""
 
-#: src/Window.cc:3296
+#: src/Window.cc:3304
 #, c-format
 msgid "BlackboxWindow::unmapNotifyEvent() for 0x%lx\n"
 msgstr "BlackboxWindow::unmapNotifyEvent() dla 0x%lx\n"
 
-#: src/Window.cc:3310
+#: src/Window.cc:3318
 #, c-format
 msgid "BlackboxWindow::destroyNotifyEvent() for 0x%lx\n"
 msgstr ""
 
-#: src/Window.cc:3323
+#: src/Window.cc:3331
 #, c-format
 msgid "BlackboxWindow::reparentNotifyEvent(): reparent 0x%lx to 0x%lx.\n"
 msgstr ""
 "BlackboxWindow::reparentNotifyEvent(): zmieniam rodzica 0x%lx na 0x%lx\n"
 
-#: src/Window.cc:3341
+#: src/Window.cc:3349
 #, c-format
 msgid "BlackboxWindow::propertyNotifyEvent(): for 0x%lx\n"
 msgstr ""
 
-#: src/Window.cc:3536
+#: src/Window.cc:3544
 #, c-format
 msgid "BlackboxWindow::exposeEvent() for 0x%lx\n"
 msgstr ""
 
-#: src/Window.cc:3608
+#: src/Window.cc:3616
 #, c-format
 msgid "BlackboxWindow::buttonPressEvent() for 0x%lx\n"
 msgstr ""
 
-#: src/Window.cc:3677
+#: src/Window.cc:3685
 #, c-format
 msgid "BlackboxWindow::buttonReleaseEvent() for 0x%lx\n"
 msgstr ""
 
-#: src/Window.cc:3720
+#: src/Window.cc:3728
 #, c-format
 msgid "BlackboxWindow::motionNotifyEvent() for 0x%lx\n"
 msgstr ""
