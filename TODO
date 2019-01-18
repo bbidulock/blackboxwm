@@ -2,34 +2,34 @@
 
 New to do items:
 
-* add support for _NET_RESTACK_WINDOW.
+* [ ] add support for _NET_RESTACK_WINDOW.
 
-* add support for _NET_SHOWING_DESKTOP.
+* [ ] add support for _NET_SHOWING_DESKTOP.
 
-* set WM_CLIENT_MACHINE on check window.
+* [ ] set WM_CLIENT_MACHINE on check window.
 
-* set WM_NAME and WM_CLASS on check window.
+* [ ] set WM_NAME and WM_CLASS on check window.
 
 Old to do items:
 
-* i18n/l10n (translations) support, need something else that can
+* [ ] i18n/l10n (translations) support, need something else that can
   translate into either UTF-8 (needed for NETWM and Xft) or locale
   (for Xmb).
 
-* make sure transients are correctly associated at startup. this is
+* [ ] make sure transients are correctly associated at startup. this is
   partially done by ensuring stacking order across restarts... we
   might be able to do more, but it's not urgent
 
-* session support via the X session management protocol
+* [ ] session support via the X session management protocol
 
-* re-add support for tear-off menus to bt::Menu
+* [ ] re-add support for tear-off menus to bt::Menu
 
-* see about supporting specifications at www.freedesktop.org (for
+* [ ] see about supporting specifications at www.freedesktop.org (for
   example, the basedirs-spec)... if the various bbtools also follow
   this spec (read: add something to libbt), then sharing data/config
   files is much easier
 
-* the current style is stored only by name (not by path)... all styles
+* [ ] the current style is stored only by name (not by path)... all styles
   have to placed in some directory ($XDG_DATA_DIRS/blackbox/styles,
   for example) in order for them to be found.  The menu could
   automatically search all $XDG_DATA_DIRS directories and build up the
@@ -37,13 +37,13 @@ Old to do items:
   new style directories... this also gives us the possibility of
   defining a style "package" format
 
-* similarly, all config files (the rc, the menu file, a style
+* [ ] similarly, all config files (the rc, the menu file, a style
   "override" file) should be stored somewhere in $XDG_CONFIG_DIRS
 
-* as mentioned above, allow the user to override anything in the
+* [ ] as mentioned above, allow the user to override anything in the
   style... either in the rc or in a separate "override" style
 
-* introduce the concept of actions.  actions are things that the end
+* [ ] introduce the concept of actions.  actions are things that the end
   user can do, e.g. close, move, iconify, switch workspaces,
   etc... these can be configurable with one or more mouse/key
   combinations... when doing this, talk with vanR about the future of
@@ -70,3 +70,5 @@ CHANGE: move all of the fprintf() messages to a message function /
         disabled for final builds.
 
 CHANGE: use less pointers and more references
+
+// vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn spell:
