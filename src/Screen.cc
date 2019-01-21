@@ -2429,7 +2429,7 @@ bool BScreen::smartPlacement(unsigned int workspace, bt::Rect& rect,
     - inner -> vertical axis
   */
 
-  int gx, gy;
+  int gx = 0, gy = 0;
   int &outer = row_placement ? gy : gx;
   int &inner = row_placement ? gx : gy;
   const int outer_delta = row_placement
