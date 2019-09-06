@@ -25,7 +25,7 @@ git tag -n100 -l 0.75
 
 git shortlog -e -n -w80,6,8 0.74...0.75
 
-Brian Bidulock <bidulock@openss7.org> (12):
+Brian Bidulock <bidulock@openss7.org> (15):
       reformat TODO
       generate NEWS better
       update for gettext 0.20.1 to fix issue #23
@@ -38,6 +38,9 @@ Brian Bidulock <bidulock@openss7.org> (12):
       ignore release products
       generate release notes on dist
       handle annotated tags better when generating NEWS
+      update po files
+      ignore lz files
+      update release files
 
 
 Release blackbox-0.74 released 2018-10-31

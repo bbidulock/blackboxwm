@@ -1,5 +1,61 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 3b0a4ab71f5b7f2911cc9543cb86d919e32fede5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Sep 6 02:39:54 2019 -0600
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 332 ++++++++++++++++++++-----------------------------------
+ NEWS         |  88 +++++++++------
+ README       |  26 ++---
+ README.md    |  26 ++---
+ configure.ac |  12 +-
+ 6 files changed, 212 insertions(+), 274 deletions(-)
+
+commit e5eafeec0f8ecbf851d1943382d66ea00912e298
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Sep 6 02:39:39 2019 -0600
+
+    ignore lz files
+
+ .gitignore | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit 8af61932a4b8a3671d396a8982ac54e115f461f0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Sep 6 02:38:44 2019 -0600
+
+    update po files
+
+ po/blackbox.pot | 4 ++--
+ po/da.po        | 2 +-
+ po/de.po        | 2 +-
+ po/es.po        | 2 +-
+ po/es_AR.po     | 2 +-
+ po/et.po        | 2 +-
+ po/fr.po        | 2 +-
+ po/hu.po        | 2 +-
+ po/it.po        | 2 +-
+ po/ja.po        | 2 +-
+ po/ko.po        | 2 +-
+ po/lv.po        | 2 +-
+ po/nl.po        | 2 +-
+ po/no.po        | 2 +-
+ po/pl.po        | 2 +-
+ po/pt_BR.po     | 2 +-
+ po/ro.po        | 2 +-
+ po/ru.po        | 2 +-
+ po/sk.po        | 2 +-
+ po/sl.po        | 2 +-
+ po/sv.po        | 2 +-
+ po/tr.po        | 2 +-
+ po/uk.po        | 2 +-
+ po/zh_CN.po     | 2 +-
+ po/zh_TW.po     | 2 +-
+ 25 files changed, 26 insertions(+), 26 deletions(-)
+
 commit c323a742f2eef8624f7cf4f0275d432f95c70eaf
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Fri Sep 6 02:15:25 2019 -0600
@@ -8601,31 +8657,3 @@ Date:   Mon Feb 23 15:34:35 2004 +0000
  src/blackbox.cc | 21 ++++++++++++++++++++-
  src/blackbox.hh |  5 +++++
  5 files changed, 47 insertions(+), 16 deletions(-)
-
-commit f0b98b5bee61e9af75e56bb8e6746efe311dc850
-Author: bradleyhughes <bradleyhughes>
-Date:   Mon Feb 23 14:17:49 2004 +0000
-
-    don't restrict fullscreen to WindowTypeNormal only... i've actually
-    seen some programs with fullscreen WindowTypeDialog windows (ugh)
-
- src/Window.cc | 27 +++++++++++----------------
- 1 file changed, 11 insertions(+), 16 deletions(-)
-
-commit 637f07cd70896dfc4faa4369226601dca94ee698
-Author: bradleyhughes <bradleyhughes>
-Date:   Mon Feb 23 12:47:55 2004 +0000
-
-    fix horizontal gradient rendering
-
- lib/Image.cc | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-commit f505c385e86bd42fbb95615954d918f3a30f6a4f
-Author: bradleyhughes <bradleyhughes>
-Date:   Mon Feb 23 11:00:51 2004 +0000
-
-    menu item margins should be zero if the frame margin is zero...
-
- lib/Menu.cc | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
