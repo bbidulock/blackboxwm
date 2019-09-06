@@ -77,5 +77,11 @@ RELEASE.html: RELEASE.md
 RELEASE.txt: RELEASE.html
 	$(AM_V_GEN)$(LINKS) -dump -width 80 -nolist $< | sed -r -e 's,^[[:space:]]*,,' >$@
 
+NOTES.html: NOTES
+	$(AM_V_GEN)$(ASCIIDOC) -o - $< >$@
+
+TODO.html: TODO
+	$(AM_V_GEN)$(ASCIIDOC) -o - $< >$@
+
 EXTRA_DIST += gettext.h
 
