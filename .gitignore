@@ -16,6 +16,7 @@ _*
 *.log
 *.lzma
 *.lzo
+*.lz
 *.o
 *.o.*
 *.orig
