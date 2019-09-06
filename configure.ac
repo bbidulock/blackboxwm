@@ -2,8 +2,16 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([blackbox],[0.74],[http://github.com/bbidulock/blackboxwm],[blackbox],[http://github.com/bbidulock/blackboxwm/issues])
-AC_REVISION([0.74])
+AC_INIT([blackbox],[0.74.3],[http://github.com/bbidulock/blackboxwm],[blackbox],[http://github.com/bbidulock/blackboxwm/issues])
+AC_REVISION([0.74.3])
+
+# set better defaults
+AC_PREFIX_DEFAULT([/usr])
+if test "$prefix" = /usr -o "$prefix" = NONE; then
+	test "$sysconfdir" = '${prefix}/etc' && sysconfdir=/etc
+	test "$sharedstatedir" = '${prefix}/com' && sharedstatedir=/var
+	test "$localstatedir" = '${prefix}/var' && localstatedir=/var
+fi
 
 AC_CONFIG_SRCDIR([src/blackbox.cc])
 AC_CONFIG_HEADERS([config.h])
@@ -12,17 +20,19 @@ AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_TARGET
 
-DATE='2018-10-31'
+DATE='2019-06-17'
 AC_SUBST([DATE])
 
-BRANCH='0.74'
+MDOCDATE='June 17, 2019'
+AC_SUBST([MDOCDATE])
+
+BRANCH='master'
 AC_SUBST([BRANCH])
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([gnits 1.14 dist-xz no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
+AM_INIT_AUTOMAKE([1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
 AM_MAINTAINER_MODE
 AM_SILENT_RULES([yes])
-AC_PREFIX_DEFAULT([/usr])
 
 # Checks for programs.
 AC_PROG_SED
@@ -76,10 +86,9 @@ LT_PATH_LD
 LT_PREREQ([2.4.2])
 LT_INIT([])
 LT_LANG([C++])
-AC_PROG_LIBTOOL
 AC_SUBST([LIBTOOL_DEPS])
 
-AM_GNU_GETTEXT_VERSION([0.19.8])
+AM_GNU_GETTEXT_VERSION([0.20])
 AM_GNU_GETTEXT([external])
 
 AC_LANG([C++])
@@ -87,21 +96,26 @@ AC_LANG([C++])
 PKG_PROG_PKG_CONFIG([0.14.0])
 
 # Checks for header files.
+AS_BOX([Header Files])
 AC_HEADER_STDC
 AC_PATH_X
 AC_PATH_XTRA
 AC_CHECK_HEADERS([fcntl.h langinfo.h limits.h locale.h string.h sys/time.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
+AS_BOX([Typedefs, Structures, Compiler])
 AC_CHECK_HEADER_STDBOOL
 AC_C_INLINE
 AC_TYPE_MODE_T
 AC_TYPE_SIZE_T
 
 # Checks for library functions.
+AS_BOX([Library Functions])
 AC_FUNC_FORK
 AC_FUNC_STRNLEN
 AC_CHECK_FUNCS([gethostname gettimeofday memmove memset mkdir nl_langinfo putenv select setlocale sqrt strcasecmp strncasecmp strtol strtoul])
+
+AS_BOX([X11 Extension Libraries])
 
 PKG_CHECK_MODULES([X11],[x11])
 PKG_CHECK_MODULES([XEXT],[xext], [],
