@@ -101,6 +101,9 @@ src/Makefile.in
 README
 README.html
 README.txt
+RELEASE
+RELEASE.html
+RELEASE.txt
 stamp-h1
 util/bsetroot
 util/bstyleconvert
