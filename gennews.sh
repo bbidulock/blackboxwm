@@ -14,7 +14,7 @@ for o in $(git tag --sort=-creatordate) ""; do
 	i=$((i+1))
 	if [ -z "$t" ] ; then
 		head=$(git show -s --format=%H HEAD)
-		last=$(git show -s --format=%H "$o")
+		last=$(git show -s --format=%H "$o^{commit}")
 		if [ "$head" = "$last" ]; then
 			t="$o"
 			continue
