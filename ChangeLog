@@ -1,5 +1,15 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 9ae785ab8501a8d3644ab2c938211b8805fc464c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Sep 6 03:36:23 2019 -0600
+
+    update release files
+
+ ChangeLog | 84 +++++++++++++++++++++++++++++++++++++++--------------------
+ NEWS      |  5 +++-
+ 2 files changed, 60 insertions(+), 29 deletions(-)
+
 commit 3b0a4ab71f5b7f2911cc9543cb86d919e32fede5
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Fri Sep 6 02:39:54 2019 -0600
@@ -8640,20 +8650,3 @@ Date:   Mon Feb 23 15:49:03 2004 +0000
  src/Slitmenu.cc    | 14 ++++++++++++--
  src/Toolbarmenu.cc |  7 ++++++-
  2 files changed, 18 insertions(+), 3 deletions(-)
-
-commit ae74a8f7e727bbda39df626a041eef8286b6f664
-Author: bradleyhughes <bradleyhughes>
-Date:   Mon Feb 23 15:34:35 2004 +0000
-
-    add Blackbox::XGrabServer() and ::XUngrabServer(), which implement a
-    sort of ref-counted grab on the X server (since the Xlib functions
-    don't do this).  this allows us to optimize things like restarts and
-    workspace switching, so that we do only a single grab/ungrab (instead
-    of one grab/ungrab per managed window).
-
- src/Screen.cc   |  8 ++++++++
- src/Slit.cc     |  9 ++++-----
- src/Window.cc   | 20 ++++++++++----------
- src/blackbox.cc | 21 ++++++++++++++++++++-
- src/blackbox.hh |  5 +++++
- 5 files changed, 47 insertions(+), 16 deletions(-)

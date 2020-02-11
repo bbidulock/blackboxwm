@@ -25,7 +25,7 @@ git tag -n100 -l 0.75
 
 git shortlog -e -n -w80,6,8 0.74...0.75
 
-Brian Bidulock <bidulock@openss7.org> (15):
+Brian Bidulock <bidulock@openss7.org> (16):
       reformat TODO
       generate NEWS better
       update for gettext 0.20.1 to fix issue #23
@@ -40,6 +40,7 @@ Brian Bidulock <bidulock@openss7.org> (15):
       handle annotated tags better when generating NEWS
       update po files
       ignore lz files
+      update release files
       update release files
 
 
