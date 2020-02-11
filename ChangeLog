@@ -1,5 +1,93 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit b0852098a66d2bb75d080da058a068528bda7ba3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 05:28:58 2020 -0700
+
+    unset DESKTOP_STARTUP_ID in environment
+
+    - this caused some issues with children: the desktop
+      application is supposed to unset DESKTOP_STARTUP_ID
+      environment variable so it is not passed inadvertently
+      to spawned children.  Some xde-ctools applications
+      were taking the time stamp from DESKTOP_STARTUP_ID
+      from when the window manager was launched and passing
+      this time stamp to gtk_menu_popup().  The very old
+      time stamp was keeping the menu from popping.
+
+    - also, BB did not peform startup notification
+      completion when it was launched with a
+      DESKTOP_STARTUP_ID: now it does.
+
+ lib/EWMH.cc   | 42 ++++++++++++++++++++++++++++++++++++++++++
+ lib/EWMH.hh   |  1 +
+ src/Screen.cc |  2 ++
+ 3 files changed, 45 insertions(+)
+
+commit 37b91c47fbddc0a6701772cb29c3725fb724a482
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 05:27:19 2020 -0700
+
+    fixups for -Wextra compile
+
+ src/Rootmenu.cc | 1 +
+ src/Screen.cc   | 1 +
+ src/Window.cc   | 2 +-
+ 3 files changed, 3 insertions(+), 1 deletion(-)
+
+commit c2c9a40a24d62e9831f4e99b21258d626116c197
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 05:26:09 2020 -0700
+
+    better cscope and MDOCDATE handling
+
+ autogen.sh   | 8 ++++++--
+ configure.sh | 7 ++-----
+ 2 files changed, 8 insertions(+), 7 deletions(-)
+
+commit cf1ee81a78f62db1d27b60708617aa958b5f724c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 04:40:25 2020 -0700
+
+    post-release update
+
+ ChangeLog | 27 ++++++++++-----------------
+ NEWS      |  3 ++-
+ 2 files changed, 12 insertions(+), 18 deletions(-)
+
+commit 6b3682aa8412100e87903d1f6897761372e5286c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Sep 6 07:14:52 2019 -0600
+
+    update po files
+
+ po/blackbox.pot | 2 +-
+ po/da.po        | 2 +-
+ po/de.po        | 2 +-
+ po/es.po        | 2 +-
+ po/es_AR.po     | 2 +-
+ po/et.po        | 2 +-
+ po/fr.po        | 2 +-
+ po/hu.po        | 2 +-
+ po/it.po        | 2 +-
+ po/ja.po        | 2 +-
+ po/ko.po        | 2 +-
+ po/lv.po        | 2 +-
+ po/nl.po        | 2 +-
+ po/no.po        | 2 +-
+ po/pl.po        | 2 +-
+ po/pt_BR.po     | 2 +-
+ po/ro.po        | 2 +-
+ po/ru.po        | 2 +-
+ po/sk.po        | 2 +-
+ po/sl.po        | 2 +-
+ po/sv.po        | 2 +-
+ po/tr.po        | 2 +-
+ po/uk.po        | 2 +-
+ po/zh_CN.po     | 2 +-
+ po/zh_TW.po     | 2 +-
+ 25 files changed, 25 insertions(+), 25 deletions(-)
+
 commit 9ae785ab8501a8d3644ab2c938211b8805fc464c
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Fri Sep 6 03:36:23 2019 -0600
@@ -8591,62 +8679,3 @@ Date:   Fri Feb 27 07:40:12 2004 +0000
  src/Window.cc           | 44 ++++++++------------------------------------
  src/Window.hh           |  3 +--
  4 files changed, 21 insertions(+), 68 deletions(-)
-
-commit d1b5a4f15f0c45d48c8871a49b80c42f66091dd9
-Author: bradleyhughes <bradleyhughes>
-Date:   Wed Feb 25 11:29:59 2004 +0000
-
-    fix 2 bugs:
-
-    1. setFullScreen() would not work if the new/old frame geometries were
-    the same... so we need to trick BlackboxWindow::configure() into
-    always working
-
-    2. BlackboxWindow::configureRequestEvent() would incorrectly ignore
-    move events if the window didn't support resizing due to incorrect
-    logic.  fix the logic, fix the bug!
-
- src/Window.cc | 26 +++++++++++++++-----------
- 1 file changed, 15 insertions(+), 11 deletions(-)
-
-commit 9e8b4aaee6645bd01022e5a947b310f411d3328b
-Author: bradleyhughes <bradleyhughes>
-Date:   Wed Feb 25 08:39:12 2004 +0000
-
-    EWMH expects the stacking list to be bottom-to-top
-
- src/Screen.cc | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-commit 0375c1dbafba788a859742baa869c77b22be8344
-Author: shaleh <shaleh>
-Date:   Mon Feb 23 18:38:56 2004 +0000
-
-    Reorder the initializer.
-
- lib/Image.cc | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 23829b4a069a804d5e16c3b4307ba76952d922a9
-Author: bradleyhughes <bradleyhughes>
-Date:   Mon Feb 23 15:53:39 2004 +0000
-
-    remove Slit::setPlacement() and ::setDirection()... they are only
-    called from Configmenu, which already does the resource
-    setting/saving... all we need is Slit::reconfigure()
-
- src/Slit.cc     | 14 --------------
- src/Slit.hh     |  3 ---
- src/Slitmenu.cc |  4 ++--
- 3 files changed, 2 insertions(+), 19 deletions(-)
-
-commit 67d722bf6b9c9b0ec49decee143ffd6438c25a43
-Author: bradleyhughes <bradleyhughes>
-Date:   Mon Feb 23 15:49:03 2004 +0000
-
-    the Slit and Toolbar can be zero... don't call member functions unless
-    they exist
-
- src/Slitmenu.cc    | 14 ++++++++++++--
- src/Toolbarmenu.cc |  7 ++++++-
- 2 files changed, 18 insertions(+), 3 deletions(-)

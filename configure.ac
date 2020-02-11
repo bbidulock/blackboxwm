@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([blackbox],[0.75],[http://github.com/bbidulock/blackboxwm],[blackbox],[http://github.com/bbidulock/blackboxwm/issues])
-AC_REVISION([0.75])
+AC_INIT([blackbox],[0.76],[http://github.com/bbidulock/blackboxwm],[blackbox],[http://github.com/bbidulock/blackboxwm/issues])
+AC_REVISION([0.76])
 
 # set better defaults
 AC_PREFIX_DEFAULT([/usr])
@@ -20,13 +20,13 @@ AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_TARGET
 
-DATE='2019-09-06'
+DATE='2020-02-11'
 AC_SUBST([DATE])
 
-MDOCDATE='September 6, 2019'
+MDOCDATE='February 11, 2020'
 AC_SUBST([MDOCDATE])
 
-BRANCH='0.75'
+BRANCH='0.76'
 AC_SUBST([BRANCH])
 
 # Initialize Automake

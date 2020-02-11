@@ -1,4 +1,36 @@
-blackbox -- history of user-visible changes.  2019-09-06
+blackbox -- history of user-visible changes.  2020-02-11
+
+Release blackbox-0.76 released 2020-02-11
+-----------------------------------------
+
+git tag -n100 -l 0.76
+
+0.76            Maintenance Release 0.76
+
+    This is a maintenance release of the blackboxwm package. This package
+    contains a maintained fork of the original blackbox CVS that is on
+    Sourceforge. It includes all of the official blackbox CVS repository,
+    as well as patches collected from pdl-linux, Debian, the blackbox bug
+    list, other GitHub forks. It also includes greatly enhanced EWMH/ICCCM
+    compliance. See COMPLIANCE in the release for additional information on
+    enhanced compliance.
+
+    This release is a maintenance release whose purpose is to update the
+    build system and address handling of DESKTOP_STARTUP_ID environment
+    variable. There are no outstanding issues at the time of release.
+
+    Included in the release is an autoconf tarball for building the release
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.75...0.76
+
+Brian Bidulock <bidulock@openss7.org> (4):
+      post-release update
+      better cscope and MDOCDATE handling
+      fixups for -Wextra compile
+      unset DESKTOP_STARTUP_ID in environment
+
 
 Release blackbox-0.75 released 2019-09-06
 -----------------------------------------
@@ -25,7 +57,7 @@ git tag -n100 -l 0.75
 
 git shortlog -e -n -w80,6,8 0.74...0.75
 
-Brian Bidulock <bidulock@openss7.org> (16):
+Brian Bidulock <bidulock@openss7.org> (17):
       reformat TODO
       generate NEWS better
       update for gettext 0.20.1 to fix issue #23
@@ -42,6 +74,7 @@ Brian Bidulock <bidulock@openss7.org> (16):
       ignore lz files
       update release files
       update release files
+      update po files
 
 
 Release blackbox-0.74 released 2018-10-31
@@ -155,95 +188,4 @@ Brian Bidulock <bidulock@openss7.org> (4):
       fix some focus issue
       update release files
       update po files
-
-
-Release blackbox-0.71 released 2014-08-31
------------------------------------------
-
-git shortlog -e -n -w80,6,8 0.70.2...0.71
-
-Brian Bidulock <bidulock@openss7.org> (70):
-      ticket #337 on sourceforge
-      set full properties on selection and check windows
-      need empty m4 directory
-      correct hostname length
-      add WM_WINDOW_ROLE to selection and check windows
-      collapse select and check windows to same window
-      fix valgrind reported invalid access error
-      pass -g -O2 -D_FORTIFY_SOURCE=2 -Wall -Werror
-      update EWMH state when changing layers
-      trick EWMH maximization into working correctly
-      clean up maximization altogether
-      get maximize checkbutton to display correctly
-      keep client from setting stupid values on backing store and win gravity
-      [restart] support to be shell cmd just like [exec]
-      allowed actions do not depend on iconic state
-      passes a distcheck
-      conditional NLS handling
-      these are automatically generated
-      new instructions
-      proper fonts for styles
-      better build system
-      pulling in more translatable strings
-      more translable strings
-      add translation descriptions for all strings
-      bind to the text domains
-      more translatable strings, started fr_FR
-      update release files
-      simplify language designations
-      strap in German translations
-      Added Spanish translations
-      added Italian translations
-      added Japanese translations
-      get codeset right
-      added Dutch translations
-      added Danish translations
-      added Russian translations
-      added Romanian translations
-      upgraded French translations
-      more Spanish translations
-      added Estonian translations
-      added Hungarian translations
-      added Latvian translations
-      added Norwegian translations
-      added Polish translations
-      added Portugese translations
-      added Slovak translations
-      added Slovenian translations
-      add Swedish translations
-      added Ukrainian translations
-      added Turkish translations
-      add Korean transltations
-      added Chinese translations
-      added Chinese Traditional but too many multi-byte sequence errors.
-      do not needs this directory anymore
-      add COMPLIANCE document to release
-      update release files for release
-      a couple of typos in configure.ac
-      a few more translatable strings that I missed
-      updated PO files with new strings
-      Revert "do not needs this directory anymore"
-      add in more translated messages
-      Revert "Revert "do not needs this directory anymore""
-      put NLS manual pages in the right directory
-      have to setlocale to get NLS up and running
-      these are all utf-8 now (I think vim did that from the start)
-      Revert "do not needs this directory anymore"
-      Revert "Revert "do not needs this directory anymore""
-      fix missing newline
-      put all translations (.po files) in UTF-8
-      release date got pushed
-
-DeltaResero <deltaresero@zoho.com> (7):
-      Reformat .gitignore and add more filetypes to ignore
-      Use bash instead of sh for scripts
-      Fix some spelling and manual typographic errors
-      Fix manageable spelling issue
-      Left click for iconified windows list
-      Make Blackbox restart when it receives SIGQUIT
-      Replace headers stdio.h, ctype.h, & stdlib.h with cstdio, cctype, &
-        cstdlib
-
-Johannes Winkelmann <jw@smts.ch> (1):
-      Add splitvertical gradient
 

@@ -1,6 +1,6 @@
-[blackboxwm -- release notes.  2018-10-31]: #
+[blackboxwm -- release notes.  2020-02-11]: #
 
-Maintenance Release 0.75
+Maintenance Release 0.76
 ========================
 
 This is a maintenance release of the blackboxwm package.  This package
@@ -11,9 +11,10 @@ list, other GitHub forks.  It also includes greatly enhanced EWMH/ICCCM
 compliance.  See [COMPLIANCE](COMPLIANCE) in the release for additional
 information on enhanced compliance.
 
-This release is a maintenance release whose sole purpose is to update
-the build system, generate a better NEWS file, handle annotated tags
-better, and converts the release archives to lzip compression.
+This release is a maintenance release whose purpose is to update
+the build system and address handling of `DESKTOP_STARTUP_ID`
+environment variable.  There are no outstanding issues at the time of
+release.
 
 Included in the release is an autoconf tarball for building the release
 from source.  See the [NEWS](NEWS) and [TODO](TODO) file in the release
