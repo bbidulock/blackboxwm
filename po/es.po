@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: blackbox 0.70.2.28\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm\n"
-"POT-Creation-Date: 2019-09-06 03:55-0600\n"
+"POT-Creation-Date: 2020-02-11 05:45-0700\n"
 "PO-Revision-Date: 2014-08-29 13:16-0600\n"
 "Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
 "Language-Team: Spanish\n"
@@ -357,109 +357,109 @@ msgstr "Nuevo Escritorio"
 msgid "Remove Last Workspace"
 msgstr "Quitar Ultimo"
 
-#: src/Screen.cc:167
+#: src/Screen.cc:168
 #, c-format
 msgid "%s: another window manager is already running on display '%s'\n"
 msgstr ""
 "%s: Ya hay otro gestor de ventanas ejecutándose en la conexión de despliegue "
 "%s.\n"
 
-#: src/Screen.cc:181
+#: src/Screen.cc:182
 #, c-format
 msgid "%s: managing screen %u using %s visual 0x%lx, depth %d\n"
 msgstr ""
 "%s: administrando la pantalla %u usando %s visual 0x%lx, profundidad %d\n"
 
-#: src/Screen.cc:1471
+#: src/Screen.cc:1474
 #, c-format
 msgid "%s: menu file '%s' is empty\n"
 msgstr ""
 
 #. TRANS The underscore '_' indicates the hot key.
-#: src/Screen.cc:1523
+#: src/Screen.cc:1526
 msgid "_Blackbox"
 msgstr ""
 
 #. TRANS Launch a terminal.
-#: src/Screen.cc:1526
+#: src/Screen.cc:1529
 msgid "xterm"
 msgstr ""
 
 #. TRANS Restart the window manager.
-#: src/Screen.cc:1529
+#: src/Screen.cc:1532
 msgid "Restart"
 msgstr "Reiniciar"
 
 #. TRANS Exit the window manager.
-#: src/Screen.cc:1532
+#: src/Screen.cc:1535
 msgid "Exit"
 msgstr "Salir"
 
-#: src/Screen.cc:1632
+#: src/Screen.cc:1635
 #, c-format
 msgid "%s: [exec] error, no menu label and/or command defined\n"
 msgstr ""
 "%s: error en [exec], no se definió una etiqueta ni/o un comando para el "
 "menú\n"
 
-#: src/Screen.cc:1642
+#: src/Screen.cc:1645
 #, c-format
 msgid "%s: [exit] error, no menu label defined\n"
 msgstr "%s: error en [exit],  no se definió una etiqueta para el menú\n"
 
-#: src/Screen.cc:1653
+#: src/Screen.cc:1656
 #, c-format
 msgid "%s: [style] error, no menu label and/or filename defined\n"
 msgstr ""
 "%s: error en [style],  no se definió una etiqueta ni/o un nombre de archivo "
 "para el menú\n"
 
-#: src/Screen.cc:1666
+#: src/Screen.cc:1669
 #, fuzzy, c-format
 msgid "%s: [config] error, no label defined\n"
 msgstr "%s: error en [config],  no se definió una etiqueta para el menú"
 
-#: src/Screen.cc:1676
+#: src/Screen.cc:1679
 #, c-format
 msgid "%s: [include] error, no filename defined\n"
 msgstr "%s: error en [include], no se definió un nombre de archivo\n"
 
-#: src/Screen.cc:1695
+#: src/Screen.cc:1698
 #, c-format
 msgid "%s: [include] error: '%s' is not a regular file\n"
 msgstr "%s: error en [include], '%s' no es un archivo regular\n"
 
-#: src/Screen.cc:1716
+#: src/Screen.cc:1719
 #, c-format
 msgid "%s: [submenu] error, no menu label defined\n"
 msgstr "%s: error en [submenu],  no se definió una etiqueta para el menú\n"
 
-#: src/Screen.cc:1738
+#: src/Screen.cc:1741
 #, c-format
 msgid "%s: [restart] error, no menu label defined\n"
 msgstr "%s: error en [restart],  no se definió una etiqueta para el menú\n"
 
-#: src/Screen.cc:1754
+#: src/Screen.cc:1757
 #, c-format
 msgid "%s: [reconfig] error, no menu label defined\n"
 msgstr "%s: error en [reconfig],  no se definió una etiqueta para el menú\n"
 
-#: src/Screen.cc:1769
+#: src/Screen.cc:1772
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, no directory defined\n"
 msgstr "%s: error en [stylesdir/stylesmenu], no se definió un directorio\n"
 
-#: src/Screen.cc:1782
+#: src/Screen.cc:1785
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, '%s' does not exist\n"
 msgstr "%s: error en [stylesdir/stylesmenu], '%s' no existe\n"
 
-#: src/Screen.cc:1788
+#: src/Screen.cc:1791
 #, c-format
 msgid "%s: [stylesdir/stylesmenu] error, '%s' is not a directory\n"
 msgstr "%s: error en [stylesdir/stylesmenu], '%s' no es un directorio\n"
 
-#: src/Screen.cc:1846
+#: src/Screen.cc:1849
 #, c-format
 msgid "%s: [workspaces] error, no menu label defined\n"
 msgstr "%s: error en [workspaces],  no se definió una etiqueta para el menú\n"
