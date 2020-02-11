@@ -25,11 +25,13 @@ git tag -n100 -l 0.76
 
 git shortlog -e -n -w80,6,8 0.75...0.76
 
-Brian Bidulock <bidulock@openss7.org> (4):
+Brian Bidulock <bidulock@openss7.org> (6):
       post-release update
       better cscope and MDOCDATE handling
       fixups for -Wextra compile
       unset DESKTOP_STARTUP_ID in environment
+      update po files
+      update release files
 
 
 Release blackbox-0.75 released 2019-09-06

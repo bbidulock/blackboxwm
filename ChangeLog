@@ -1,5 +1,53 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit cddadf746a1f00e186c8b021256188a6ea8f494f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 05:46:33 2020 -0700
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 147 +++++++++++++++++++++++++++++++++----------------------
+ NEWS         | 128 +++++++++++++-----------------------------------
+ README       |  26 +++++-----
+ README.md    |  26 +++++-----
+ RELEASE.md   |  11 +++--
+ configure.ac |  10 ++--
+ 7 files changed, 161 insertions(+), 189 deletions(-)
+
+commit 553d17ee683fbc4cf79dcf862f58aa7df90d28a3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 05:46:22 2020 -0700
+
+    update po files
+
+ po/blackbox.pot | 44 ++++++++++++++++++++++----------------------
+ po/da.po        | 42 +++++++++++++++++++++---------------------
+ po/de.po        | 42 +++++++++++++++++++++---------------------
+ po/es.po        | 42 +++++++++++++++++++++---------------------
+ po/es_AR.po     | 42 +++++++++++++++++++++---------------------
+ po/et.po        | 42 +++++++++++++++++++++---------------------
+ po/fr.po        | 42 +++++++++++++++++++++---------------------
+ po/hu.po        | 42 +++++++++++++++++++++---------------------
+ po/it.po        | 42 +++++++++++++++++++++---------------------
+ po/ja.po        | 42 +++++++++++++++++++++---------------------
+ po/ko.po        | 42 +++++++++++++++++++++---------------------
+ po/lv.po        | 42 +++++++++++++++++++++---------------------
+ po/nl.po        | 42 +++++++++++++++++++++---------------------
+ po/no.po        | 42 +++++++++++++++++++++---------------------
+ po/pl.po        | 42 +++++++++++++++++++++---------------------
+ po/pt_BR.po     | 42 +++++++++++++++++++++---------------------
+ po/ro.po        | 42 +++++++++++++++++++++---------------------
+ po/ru.po        | 42 +++++++++++++++++++++---------------------
+ po/sk.po        | 42 +++++++++++++++++++++---------------------
+ po/sl.po        | 42 +++++++++++++++++++++---------------------
+ po/sv.po        | 42 +++++++++++++++++++++---------------------
+ po/tr.po        | 42 +++++++++++++++++++++---------------------
+ po/uk.po        | 42 +++++++++++++++++++++---------------------
+ po/zh_CN.po     | 42 +++++++++++++++++++++---------------------
+ po/zh_TW.po     | 42 +++++++++++++++++++++---------------------
+ 25 files changed, 526 insertions(+), 526 deletions(-)
+
 commit b0852098a66d2bb75d080da058a068528bda7ba3
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Tue Feb 11 05:28:58 2020 -0700
@@ -8657,25 +8705,3 @@ Date:   Fri Feb 27 11:49:04 2004 +0000
  src/Slit.cc             | 104 ++++++++++++++++++--------------------------
  src/Slit.hh             |   5 ++-
  4 files changed, 69 insertions(+), 65 deletions(-)
-
-commit 66f5f41048c1066f538434f04ec3860db6c29154
-Author: bradleyhughes <bradleyhughes>
-Date:   Fri Feb 27 10:28:58 2004 +0000
-
-    fix right-to-left and bottom-to-top smart placement... oh how i love
-    these off-by-one errors
-
- src/Screen.cc | 40 +++++++++++++++++++++-------------------
- 1 file changed, 21 insertions(+), 19 deletions(-)
-
-commit 1c424f29262a4a1803f7c527f38e607f2024f822
-Author: bradleyhughes <bradleyhughes>
-Date:   Fri Feb 27 07:40:12 2004 +0000
-
-    kill the window frame around the client window...
-
- src/BlackboxResource.cc | 38 ++++++++++----------------------------
- src/BlackboxResource.hh |  4 ++--
- src/Window.cc           | 44 ++++++++------------------------------------
- src/Window.hh           |  3 +--
- 4 files changed, 21 insertions(+), 68 deletions(-)
