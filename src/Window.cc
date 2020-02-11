@@ -1150,7 +1150,7 @@ BlackboxWindow::BlackboxWindow(Blackbox *b, Window w, BScreen *s) {
 
   case WindowTypeDock:
     setLayer(StackingList::LayerAbove);
-    // fallthrough intended
+    /* fall thru */
 
   default:
     if (client.ewmh.above)

@@ -63,6 +63,7 @@ static int anotherWMRunning(Display *, XErrorEvent *) {
 extern "C" {
 
 static Bool selectionReleased(Display *d, XEvent *e, XPointer arg) {
+  (void) d;
   if (e->type == DestroyNotify) {
     if (e->xdestroywindow.window == (Window)arg) {
       return True;
