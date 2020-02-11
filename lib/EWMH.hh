@@ -309,6 +309,7 @@ namespace bt {
     // void readFrameExtents(Window target, ...) const;
     void setFrameExtents(Window target, Strut& borders) const;
     bool readStartupID(Window target, bt::ustring &id) const;
+    void setStartupId(Window target, Window root) const;
 
     // Window Manager Protocols
     inline Atom wmPing(void) const

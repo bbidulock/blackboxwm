@@ -28,6 +28,7 @@
 #include <X11/Xlib.h>
 
 #include <cstdio>
+#include <cstring>
 
 
 bt::EWMH::EWMH(const Display &_display)
@@ -790,4 +791,45 @@ bool bt::EWMH::isSupportedWMWindowType(Atom atom) const {
           atom == net_wm_window_type_dropdown_menu ||
           atom == net_wm_window_type_popup_menu ||
           atom == net_wm_window_type_tooltip);
+}
+
+void bt::EWMH::setStartupId(Window target, Window root) const {
+  const char *id;
+
+  if (!(id = getenv("DESKTOP_STARTUP_ID")))
+    return;
+
+  std::string s(id);
+
+  // must unset so it does not propagate to children
+  unsetenv("DESKTOP_STARTUP_ID");
+
+  XChangeProperty(display.XDisplay(), target, net_startup_id, utf8_string,
+		  8, PropModeReplace,
+		  reinterpret_cast<const unsigned char *>(s.c_str()),
+		  s.length());
+
+  s = "remove: ID=" + s;
+
+  XClientMessageEvent info;
+  info.type = ClientMessage;
+  info.window = target;
+  info.message_type = net_startup_info_begin;
+  info.format = 8;
+
+  const char *p = s.c_str();
+  int l = s.length() + 1;
+
+  while (l > 0) {
+    memset(info.data.b, 0, 20);
+    memcpy(info.data.b, p, l > 20 ? 20 : l);
+    p += 20;
+    l -= 20;
+    // just PropertyChange mask in the spec doesn't work :(
+    XSendEvent(display.XDisplay(), root, False, StructureNotifyMask |
+               SubstructureNotifyMask | SubstructureRedirectMask |
+               PropertyChangeMask, (XEvent *)&info);
+    info.message_type = net_startup_info;
+  }
+  XSync(display.XDisplay(), False);
 }

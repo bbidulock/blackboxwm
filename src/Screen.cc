@@ -376,6 +376,8 @@ BScreen::BScreen(Blackbox *bb, unsigned int scrn) :
   ewmh.setSupported(screen_info.rootWindow(), supported,
                      sizeof(supported) / sizeof(Atom));
 
+  ewmh.setStartupId(select_window, screen_info.rootWindow());
+
   _blackbox->XGrabServer();
 
   unsigned int i, j, nchild;
