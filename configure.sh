@@ -28,6 +28,7 @@ esac
 ./configure \
 	--enable-maintainer-mode \
 	--enable-dependency-tracking \
+	--enable-shared \
 	CPPFLAGS="$CPPFLAGS" \
 	CFLAGS="$DEBUG_CFLAGS -Wall -Wextra -Werror -Wno-array-bounds $CFLAGS" \
 	CXXFLAGS="$DEBUG_CXXFLAGS -Wall -Wextra -Werror -Wno-array-bounds $CXXFLAGS" \
