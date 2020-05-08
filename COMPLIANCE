@@ -60,8 +60,10 @@ Section 5: Session Management
 
 ------------------------------------------------------------------------
 
-EWMH Compliance: Version 1.5
+EWMH Compliance: Version 1.5 Draft 1
 See http://www.freedesktop.org/Standards/wm-spec
+
+ *   ADWM  specific extension
 
 Section 3: Root Window Properties (and Related Messages)
 
@@ -80,14 +82,33 @@ _NET_VIRTUAL_ROOTS:			NOT supported (n/a)
 _NET_DESKTOP_LAYOUT:			supported (trivial)
 _NET_SHOWING_DESKTOP:			NOT supported
 
+ Extensions:*
+
+_NET_VISIBLE_DESKTOPS:*			NOT supported
+_NET_MONITOR_GEOMETRY:*			NOT supported
+_NET_DESKTOP_MODES:*			NOT supported (n/a)
+	_NET_DESKTOP_MODE_FLOATING:*	    NOT supported (n/a)
+	_NET_DESKTOP_MODE_TILED:*	    NOT supported (n/a)
+	_NET_DESKTOP_MODE_BOTTOM_TILED:*    NOT supported (n/a)
+	_NET_DESKTOP_MODE_MONOCLE:*	    NOT supported (n/a)
+	_NET_DESKTOP_MODE_TOP_TILED:*	    NOT supported (n/a)
+	_NET_DESKTOP_MODE_LEFT_TILED:*	    NOT supported (n/a)
+	_NET_DESKTOP_MODE_GRID:*	    NOT supported (n/a)
+
 
 Section 4: Other Root Window Messages
 
 _NET_CLOSE_WINDOW:			supported
 _NET_MOVERESIZE_WINDOW:			supported
-_NET_WM_MOVERESIZE:			NOT supported
-_NET_RESTACK_WINDOW:			NOT supported
-_NET_REQUEST_FRAME_EXTENTS:		NOT supported
+_NET_WM_MOVERESIZE:			NOT supported (todo)
+_NET_RESTACK_WINDOW:			NOT supported (todo)
+_NET_REQUEST_FRAME_EXTENTS:		NOT supported (todo)
+
+ Extensions:*
+
+_NET_RELOAD:*				NOT supported
+_NET_RESTART:*				NOT supported
+_NET_SHUTDOWN:*				NOT supported
 
 
 Section 5: Application Window Properties
@@ -97,6 +118,7 @@ _NET_WM_VISIBLE_NAME:			supported
 _NET_WM_ICON_NAME:			supported
 _NET_WM_VISIBLE_ICON_NAME:		supported
 _NET_WM_DESKTOP:			supported
+_NET_WM_DESKTOP_MASK:*			NOT supported (todo)
 _NET_WM_WINDOW_TYPE:			supported
 	_NET_WM_WINDOW_TYPE_DESKTOP:	supported
 	_NET_WM_WINDOW_TYPE_DOCK:	supported
@@ -126,6 +148,12 @@ _NET_WM_STATE:				supported
 	_NET_WM_STATE_BELOW:		supported
 	_NET_WM_STATE_DEMANDS_ATTENTION: supported
 	_NET_WM_STATE_FOCUSED:		 supported
+	*_NET_WM_STATE_FIXED:		NOT supported (n/a)
+	*_NET_WM_STATE_FLOATING:	NOT supported (n/a)
+	*_NET_WM_STATE_FILLED:		NOT supported (todo)
+	*_NET_WM_STATE_MAXIMUS_LEFT:	NOT supported (todo)
+	*_NET_WM_STATE_MAXIMUS_RIGHT:	NOT supported (todo)
+	**_OB_WM_STATE_UNDECORATED:	NOT supported (todo)
 _NET_WM_ALLOWED_ACTIONS:		supported
 	_NET_WM_ACTION_MOVE:		supported
 	_NET_WM_ACTION_RESIZE:          supported
@@ -139,6 +167,11 @@ _NET_WM_ALLOWED_ACTIONS:		supported
 	_NET_WM_ACTION_CLOSE:		supported
 	_NET_WM_ACTION_ABOVE:		supported
 	_NET_WM_ACTION_BELOW:		supported
+	*_NET_WM_ACTION_FLOAT:		NOT supported (n/a)
+	*_NET_WM_ACTION_FILL:		NOT supported (todo)
+	*_NET_WM_ACTION_MAXIMUS_LEFT:	NOT supported (todo)
+	*_NET_WM_ACTION_MAXIMUS_RIGHT:	NOT supported (todo)
+	**_OB_WM_ACTION_UNDECORATE:	NOT supported (todo)
 _NET_WM_STRUT:				supported
 _NET_WM_STRUT_PARTIAL:			supported (trivial)
 _NET_WM_ICON_GEOMETRY:			NOT supported (n/a)
@@ -151,12 +184,30 @@ _NET_FRAME_EXTENTS:			supported
 _NET_WM_OPAQUE_REGION:			NOT supported (n/a)
 _NET_WM_BYPASS_COMPOSITOR:		NOT supported (n/a)
 
+_NET_WM_MOVING:*			NOT supported (todo)
+_NET_WM_RESIZING:*			NOT supported (todo)
+
+_NET_APP_APPLICATION_ID:*		NOT supported (todo)
+_NET_APP_LAUNCHER:*			NOT supported (todo)
+_NET_APP_LAUNCHEE:*			NOT supported (todo)
+_NET_APP_HOSTNAME:*			NOT supported (todo)
+_NET_APP_PID:*				NOT supported (todo)
+_NET_APP_SEQUENCE:*			NOT supported (todo)
+_NET_APP_TIMESTAMP:*			NOT supported (todo)
+_NET_APP_NAME:*				NOT supported (todo)
+_NET_APP_DESCRIPTION:*			NOT supported (todo)
+_NET_APP_ICON_NAME:*			NOT supported (todo)
+_NET_APP_BINARY_NAME:*			NOT supported (todo)
+_NET_APP_WMCLASS:*			NOT supported (todo)
+_NET_APP_SCREEN:*			NOT supported (todo)
+_NET_APP_WORKSPACE:*			NOT supported (todo)
+
 Section 6: Window Manager Protocols
 
-_NET_WM_PING:				NOT supported
-_NET_WM_SYNC_REQUEST:			NOT supported
-_NET_WM_SYNC_REQUEST_COUNTER:		NOT supported
-_NET_WM_FULLSCREEN_MONITORS:		NOT supported
+_NET_WM_PING:				NOT supported (todo)
+_NET_WM_SYNC_REQUEST:			NOT supported (todo)
+_NET_WM_SYNC_REQUEST_COUNTER:		NOT supported (todo)
+_NET_WM_FULLSCREEN_MONITORS:		NOT supported (todo)
 _NET_WM_FULL_PLACEMENT:			NOT supported (n/a)
 
 Other specifications:
@@ -178,6 +229,48 @@ Composite Manager Specification:
 
 _NET_WM_WINDOW_OPACITY:			NOT supported (n/a)
 
+------------------------------------------------------------------------
+
+Blackbox Specific:
+
+_BLACKBOX_PID:				supported
+_BB_THEME:				supported
+
+------------------------------------------------------------------------
+
+OpenBox Specific:
+
+* Note that we do not pretend to be OpenBox
+  for obvious reasons.
+
+1. Client Messages
+
+_OPENBOX_PID:			      * NOT supported (but not set) (todo)
+
+_OB_CONTROL:				NOT supported (todo)
+	OB_CONTROL_RECONFIG(1)		    NOT supported (todo)
+	OB_CONTROL_RESTART(2)		    NOT supported (todo)
+	OB_CONTROL_QUIT(3)		    NOT supported (todo)
+
+2. Root Window Properties
+
+_OB_CONFIG_FILE			      * NOT supported (but not set) (todo)
+_OB_THEME			      * NOT supported (but not set) (todo)
+_OB_VERSION:			      * NOT supported (but not set) (todo)
+
+3. Client Properties
+
+_OB_APP_GROUP_CLASS:			NOT supported (todo)
+_OB_APP_GROUP_NAME:			NOT supported (todo)
+_OB_APP_CLASS:				NOT supported (todo)
+_OB_APP_NAME:				NOT supported (todo)
+_OB_APP_ROLE:				NOT supported (todo)
+_OB_APP_TITLE:				NOT supported (todo)
+_OB_APP_TYPE:				NOT supported (todo)
+
+_OB_WM_ACTION_UNDECORATE:		NOT supported (todo)
+
+_OB_WM_STATE_UNDECORATED:		NOT supported (todo)
 
 ------------------------------------------------------------------------
 
