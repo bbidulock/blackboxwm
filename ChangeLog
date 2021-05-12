@@ -1,5 +1,51 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 6ff46fe396f59ec08bb40049cfa6084e03bd5c6e
+Merge: 5565598 b75a6b6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 11 23:57:18 2021 -0600
+
+    Merge branch 'master' of github.com:bbidulock/blackboxwm
+
+commit 556559846a1dcf4014d722182db2b19717986734
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 11 23:55:31 2021 -0600
+
+    update release files
+
+ AUTHORS         |   2 +-
+ ChangeLog       | 154 ++++++++++++++++------------------------------------
+ NEWS            |  47 +++++++++++-----
+ README          |  26 ++++-----
+ README.md       |  26 ++++-----
+ configure.ac    |  12 ++--
+ po/blackbox.pot |   4 +-
+ po/da.po        |   2 +-
+ po/de.po        |   2 +-
+ po/es.po        |   2 +-
+ po/es_AR.po     |   2 +-
+ po/et.po        |   2 +-
+ po/fr.po        |   2 +-
+ po/hu.po        |   2 +-
+ po/it.po        |   2 +-
+ po/ja.po        |   2 +-
+ po/ko.po        |   2 +-
+ po/lv.po        |   2 +-
+ po/nl.po        |   2 +-
+ po/no.po        |   2 +-
+ po/pl.po        |   2 +-
+ po/pt_BR.po     |   2 +-
+ po/ro.po        |   2 +-
+ po/ru.po        |   2 +-
+ po/sk.po        |   2 +-
+ po/sl.po        |   2 +-
+ po/sv.po        |   2 +-
+ po/tr.po        |   2 +-
+ po/uk.po        |   2 +-
+ po/zh_CN.po     |   2 +-
+ po/zh_TW.po     |   2 +-
+ 31 files changed, 140 insertions(+), 179 deletions(-)
+
 commit 737bf9ce2dcbd213ef4cf89dfa7ef7ec61dc7526
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Tue May 11 23:51:54 2021 -0600
@@ -17,6 +63,26 @@ Date:   Tue May 11 23:51:39 2021 -0600
 
  configure.ac | 59 ++++++++++++++++++++++++--------------------------------
  1 file changed, 25 insertions(+), 34 deletions(-)
+
+commit b75a6b62d02fd019099563b1211851265554e376
+Merge: 0735d7c 8b91a23
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Aug 22 19:15:19 2020 -0600
+
+    Merge pull request #31 from dhgutteridge/master
+
+    EWMH.cc needs cstdlib to compile on some OSes
+
+commit 8b91a238c9c4ff4a22443f36acdf203bebe44e53
+Author: David H. Gutteridge <dhgutteridge@users.noreply.github.com>
+Date:   Tue Jun 16 19:26:15 2020 -0400
+
+    EWMH.cc needs cstdlib to compile on some OSes
+
+    Inclusion of cstdlib is needed as a build fix for NetBSD and other OSes.
+
+ lib/EWMH.cc | 1 +
+ 1 file changed, 1 insertion(+)
 
 commit 0735d7c55545122d07a9c68f9da84f6b52eadafe
 Author: Brian Bidulock <bidulock@openss7.org>
@@ -8593,55 +8659,3 @@ Date:   Wed Mar 3 14:12:08 2004 +0000
  src/Window.cc | 53 +++++++++++++++++++++++++++++++++--------------------
  src/Window.hh |  4 +++-
  2 files changed, 36 insertions(+), 21 deletions(-)
-
-commit 429d7e652345d8b6402ea2279f4d40952d78df03
-Author: bradleyhughes <bradleyhughes>
-Date:   Wed Mar 3 13:01:41 2004 +0000
-
-    do not allow windows without WindowFunctionIconify to be iconified
-    when they are managed...
-
- src/Window.cc | 4 ++++
- 1 file changed, 4 insertions(+)
-
-commit a4b2217a3e47ac56d616c6de922518b5af844722
-Author: bradleyhughes <bradleyhughes>
-Date:   Tue Mar 2 11:09:12 2004 +0000
-
-    fix a couple of bugs:
-
-    1. don't use resource.numberOfWorkspaces() during runtime... add
-    BScreen::workspaceCount() and use that instead (fixes a crash when
-    trying to change to a newly created or newly removed workspace).
-
-    2. when the user adds/removes workspaces via the workspaces menu,
-    automatically save the resources so that they are preserved across
-    restarts.
-
- src/Screen.cc        | 32 ++++++++++++--------------------
- src/Screen.hh        |  6 ++++--
- src/Toolbar.cc       |  7 +++----
- src/Windowmenu.cc    |  2 +-
- src/Workspacemenu.cc |  6 +++++-
- 5 files changed, 25 insertions(+), 28 deletions(-)
-
-commit 643c73ffa77f45bf0ae74c86c45c8ef3eb50f7ec
-Author: bradleyhughes <bradleyhughes>
-Date:   Tue Mar 2 10:43:50 2004 +0000
-
-    move the 'focus new windows' block to BScreen::addWindow()... it makes
-    more sense to have it here, and also solves a small problem where the
-    _NET_ACTIVE_WINDOW property would be updated before _NET_CLIENT_LIST
-    (which confuses some apps)
-
- src/Screen.cc | 40 +++++++++++++++++++++-------------------
- 1 file changed, 21 insertions(+), 19 deletions(-)
-
-commit 4a7b735d4524cec9dcf02c255c7d0ff54199f710
-Author: bradleyhughes <bradleyhughes>
-Date:   Tue Mar 2 08:16:49 2004 +0000
-
-    use the correct sign...
-
- lib/Texture.cc | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)

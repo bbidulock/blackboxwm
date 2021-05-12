@@ -25,12 +25,18 @@ git tag -n100 -l 0.77
 
 git shortlog -e -n -w80,6,8 0.76...0.77
 
-Brian Bidulock <bidulock@openss7.org> (5):
+Brian Bidulock <bidulock@openss7.org> (8):
       post-release update
       improvements to maintenance scripts
       document compliance wider
+      Merge pull request #31 from dhgutteridge/master
       update for autoconf 2.71
       update release notes
+      update release files
+      Merge branch 'master' of github.com:bbidulock/blackboxwm
+
+David H. Gutteridge <dhgutteridge@users.noreply.github.com> (1):
+      EWMH.cc needs cstdlib to compile on some OSes
 
 
 Release blackbox-0.76 released 2020-02-11
