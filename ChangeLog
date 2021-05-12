@@ -1,5 +1,16 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 666df917bb9fce1db14c9bb484405b83df32cbfe
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 11 23:59:58 2021 -0600
+
+    update release files
+
+ AUTHORS   |   1 +
+ ChangeLog | 118 ++++++++++++++++++++++++++++++++--------------------------
+ NEWS      |   8 +++-
+ 3 files changed, 74 insertions(+), 53 deletions(-)
+
 commit 6ff46fe396f59ec08bb40049cfa6084e03bd5c6e
 Merge: 5565598 b75a6b6
 Author: Brian Bidulock <bidulock@openss7.org>
@@ -8638,24 +8649,3 @@ Date:   Wed Mar 3 14:40:55 2004 +0000
  lib/Menu.hh   | 2 +-
  src/Screen.cc | 2 +-
  3 files changed, 3 insertions(+), 3 deletions(-)
-
-commit 51fc5034284ff70618b5d813b0c854465108d6ab
-Author: bradleyhughes <bradleyhughes>
-Date:   Wed Mar 3 14:12:08 2004 +0000
-
-    a few things:
-
-    1. fix a race condition - a window could be destroyed in between when
-    we check for existance and when we actually grab the server... this
-    results in in the notorious ghost window which never goes away (except
-    by restarting)
-
-    2. windows that do not have the iconify function should not be
-    iconified in response to a WM_CHANGE_STATE message
-
-    3. add WindowFunctionFullScreen and turn it off for dialog, menu and
-    toolbar window types
-
- src/Window.cc | 53 +++++++++++++++++++++++++++++++++--------------------
- src/Window.hh |  4 +++-
- 2 files changed, 36 insertions(+), 21 deletions(-)
