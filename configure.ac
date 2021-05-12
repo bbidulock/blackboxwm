@@ -1,9 +1,9 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.69])
-AC_INIT([blackbox],[0.76],[http://github.com/bbidulock/blackboxwm],[blackbox],[http://github.com/bbidulock/blackboxwm/issues])
-AC_REVISION([0.76])
+AC_PREREQ([2.71])
+AC_INIT([blackbox],[0.76.3],[http://github.com/bbidulock/blackboxwm],[blackbox],[http://github.com/bbidulock/blackboxwm/issues])
+AC_REVISION([0.76.3])
 
 # set better defaults
 AC_PREFIX_DEFAULT([/usr])
@@ -20,23 +20,24 @@ AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_TARGET
 
-DATE='2020-02-11'
+DATE='2020-05-08'
 AC_SUBST([DATE])
 
-MDOCDATE='February 11, 2020'
+MDOCDATE='May 8, 2020'
 AC_SUBST([MDOCDATE])
 
-BRANCH='0.76'
+BRANCH='master'
 AC_SUBST([BRANCH])
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([gnits 1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
+AM_INIT_AUTOMAKE([1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
 AM_MAINTAINER_MODE
 AM_SILENT_RULES([yes])
 
 # Checks for programs.
 AC_PROG_SED
 AC_PROG_AWK
+AC_PROG_EGREP
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
@@ -88,7 +89,7 @@ LT_INIT([])
 LT_LANG([C++])
 AC_SUBST([LIBTOOL_DEPS])
 
-AM_GNU_GETTEXT_VERSION([0.20])
+AM_GNU_GETTEXT_VERSION([0.21])
 AM_GNU_GETTEXT([external])
 
 AC_LANG([C++])
@@ -97,10 +98,11 @@ PKG_PROG_PKG_CONFIG([0.14.0])
 
 # Checks for header files.
 AS_BOX([Header Files])
-AC_HEADER_STDC
+AC_CHECK_INCLUDES_DEFAULT
+
 AC_PATH_X
 AC_PATH_XTRA
-AC_CHECK_HEADERS([fcntl.h langinfo.h limits.h locale.h string.h sys/time.h unistd.h])
+AC_CHECK_HEADERS([fcntl.h langinfo.h limits.h locale.h string.h sys/time.h unistd.h libintl.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AS_BOX([Typedefs, Structures, Compiler])
@@ -112,6 +114,7 @@ AC_TYPE_SIZE_T
 # Checks for library functions.
 AS_BOX([Library Functions])
 AC_FUNC_FORK
+AC_FUNC_MALLOC
 AC_FUNC_STRNLEN
 AC_CHECK_FUNCS([gethostname gettimeofday memmove memset mkdir nl_langinfo putenv select setlocale sqrt strcasecmp strncasecmp strtol strtoul])
 
@@ -123,8 +126,7 @@ PKG_CHECK_MODULES([XEXT],[xext], [],
 	 enable_mitshm=no])
 
 AC_ARG_ENABLE([shape],
-    AC_HELP_STRING([--disable-shape],
-	[Disable use of SHAPE extension @<:@default=auto@:>@]))
+    AS_HELP_STRING([--disable-shape],[Disable use of SHAPE extension @<:@default=auto@:>@]))
 if test x$enable_shape != xno ; then
     AC_CHECK_LIB([Xext],[XShapeCombineShape],
 	[AC_DEFINE([SHAPE],[1],[Define to enable SHAPE extension.])],
@@ -132,8 +134,7 @@ if test x$enable_shape != xno ; then
 fi
 
 AC_ARG_ENABLE([mitshm],
-    AC_HELP_STRING([--disable-mitshm],
-	[Disable use of the MIT-SHM extension @<:@default=auto@:>@]))
+    AS_HELP_STRING([--disable-mitshm],[Disable use of the MIT-SHM extension @<:@default=auto@:>@]))
 if test x$enable_mitshm != xno ; then
     AC_CHECK_LIB([Xext],[XShmPutImage],
 	[AC_DEFINE([MITSHM],[1],[Define to enable MIT-SHM extension.])],
@@ -141,8 +142,7 @@ if test x$enable_mitshm != xno ; then
 fi
 
 AC_ARG_ENABLE([xft],
-    AC_HELP_STRING([--disable-xft],
-	[Disable use of XFT library @<:@default=auto@:>@]))
+    AS_HELP_STRING([--disable-xft],[Disable use of XFT library @<:@default=auto@:>@]))
 if test x$enable_xft != xno ; then
     PKG_CHECK_MODULES([XFT],[xft >= 2.0.0],
 	[AC_DEFINE([XFT],[1],[Define to enable XFT library.])
@@ -153,64 +153,55 @@ fi
 AC_SUBST([XFT_PKGCONFIG])
 
 AC_ARG_ENABLE([debug],
-    AC_HELP_STRING([--enable-debug],
-	[Enable use of verbose debugging code @<:@default=no@:>@]))
+    AS_HELP_STRING([--enable-debug],[Enable use of verbose debugging code @<:@default=no@:>@]))
 if test x$enable_debug = xyes ; then
     AC_DEFINE([DEBUG],[1],[Define to enable debugging code.])
 fi
 
 AC_ARG_ENABLE([debug-colorcache],
-    AC_HELP_STRING([--enable-debug-colorcache],
-	[Enable color cache debugging code @<:@default=no@:>@]))
+    AS_HELP_STRING([--enable-debug-colorcache],[Enable color cache debugging code @<:@default=no@:>@]))
 if test x$enable_debug_colorcache = xyes ; then
     AC_DEFINE([COLORCACHE_DEBUG],[1],[Define to debug color cache code.])
 fi
 
 AC_ARG_ENABLE([debug-colortable],
-    AC_HELP_STRING([--enable-debug-colortable],
-	[Enable color table debugging code @<:@default=no@:>@]))
+    AS_HELP_STRING([--enable-debug-colortable],[Enable color table debugging code @<:@default=no@:>@]))
 if test x$enable_debug_colortable = xyes ; then
     AC_DEFINE([COLORCACHE_DEBUG],[1],[Define to debug color table code.])
 fi
 
 AC_ARG_ENABLE([debug-focus],
-    AC_HELP_STRING([--enable-debug-focus],
-	[Enable focus debugging code @<:@default=no@:>@]))
+    AS_HELP_STRING([--enable-debug-focus],[Enable focus debugging code @<:@default=no@:>@]))
 if test x$enable_debug_focus = xyes ; then
     AC_DEFINE([FOCUS_DEBUG],[1],[Define to debug focus code.])
 fi
 
 AC_ARG_ENABLE([debug-fontcache],
-    AC_HELP_STRING([--enable-debug-fontcache],
-	[Enable font cache debugging code @<:@default=no@:>@]))
+    AS_HELP_STRING([--enable-debug-fontcache],[Enable font cache debugging code @<:@default=no@:>@]))
 if test x$enable_debug_fontcache = xyes ; then
     AC_DEFINE([FONTCACHE_DEBUG],[1],[Define to debug font cache code.])
 fi
 
 AC_ARG_ENABLE([debug-mitshm],
-    AC_HELP_STRING([--enable-debug-mitshm],
-	[Enable MIT-SHM debugging code @<:@default=no@:>@]))
+    AS_HELP_STRING([--enable-debug-mitshm],[Enable MIT-SHM debugging code @<:@default=no@:>@]))
 if test x$enable_debug_mitshm = xyes ; then
     AC_DEFINE([MITSHM_DEBUG],[1],[Define to debug MIT-SHM code.])
 fi
 
 AC_ARG_ENABLE([debug-pixmapcache],
-    AC_HELP_STRING([--enable-debug-pixmapcache],
-	[Enable pixmap cache debugging code @<:@default=no@:>@]))
+    AS_HELP_STRING([--enable-debug-pixmapcache],[Enable pixmap cache debugging code @<:@default=no@:>@]))
 if test x$enable_debug_pixmapcache = xyes ; then
     AC_DEFINE([FONTCACHE_DEBUG],[1],[Define to debug pixmap cache code.])
 fi
 
 AC_ARG_ENABLE([print-sizes],
-    AC_HELP_STRING([--enable-print-sizes],
-	[Enable printing of structure sizes on startup. @<:@default=no@:>@]))
+    AS_HELP_STRING([--enable-print-sizes],[Enable printing of structure sizes on startup. @<:@default=no@:>@]))
 if test x$enable_print_sizes = xyes ; then
     AC_DEFINE([PRINT_SIZES],[1],[Define to print structure sizes on startup.])
 fi
 
 AC_ARG_ENABLE([fullscreen],
-    AC_HELP_STRING([--disable-fullscreen],
-	[Disable fullscreen item in window menu. @<:@default=enabled@:>@]))
+    AS_HELP_STRING([--disable-fullscreen],[Disable fullscreen item in window menu. @<:@default=enabled@:>@]))
 if test x$enable_fullscreen != xno ; then
     AC_DEFINE([WITH_FULLSCREEN],[1],[Define to add fullscreen item to window menu.])
 fi
