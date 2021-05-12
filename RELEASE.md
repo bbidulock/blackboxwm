@@ -1,6 +1,6 @@
-[blackboxwm -- release notes.  2020-02-11]: #
+[blackboxwm -- release notes.  2021-05-11]: #
 
-Maintenance Release 0.76
+Maintenance Release 0.77
 ========================
 
 This is a maintenance release of the blackboxwm package.  This package
@@ -12,9 +12,8 @@ compliance.  See [COMPLIANCE](COMPLIANCE) in the release for additional
 information on enhanced compliance.
 
 This release is a maintenance release whose purpose is to update
-the build system and address handling of `DESKTOP_STARTUP_ID`
-environment variable.  There are no outstanding issues at the time of
-release.
+the build system for gcc 10.2 and autoconf 2.71.  There are no
+outstanding issues at the time of release.
 
 Included in the release is an autoconf tarball for building the release
 from source.  See the [NEWS](NEWS) and [TODO](TODO) file in the release
