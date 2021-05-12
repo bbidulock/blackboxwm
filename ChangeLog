@@ -1,5 +1,52 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 737bf9ce2dcbd213ef4cf89dfa7ef7ec61dc7526
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 11 23:51:54 2021 -0600
+
+    update release notes
+
+ RELEASE.md | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+commit 316834e9e95fec847628d2a0f0382bc8f08c2398
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 11 23:51:39 2021 -0600
+
+    update for autoconf 2.71
+
+ configure.ac | 59 ++++++++++++++++++++++++--------------------------------
+ 1 file changed, 25 insertions(+), 34 deletions(-)
+
+commit 0735d7c55545122d07a9c68f9da84f6b52eadafe
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 12:01:42 2020 -0600
+
+    document compliance wider
+
+ COMPLIANCE | 109 ++++++++++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 101 insertions(+), 8 deletions(-)
+
+commit f8e20e56ab8bb47e111700dc3f6b9c177972b4d3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 12:01:10 2020 -0600
+
+    improvements to maintenance scripts
+
+ autogen.sh   | 2 +-
+ configure.sh | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+commit ca2400c167bc4fc39ff45f10b31e64a4e66418de
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 05:47:57 2020 -0700
+
+    post-release update
+
+ ChangeLog | 70 ++++++++++++++++++++++++++++++++++++++++-------------------
+ NEWS      |  4 +++-
+ 2 files changed, 51 insertions(+), 23 deletions(-)
+
 commit cddadf746a1f00e186c8b021256188a6ea8f494f
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Tue Feb 11 05:46:33 2020 -0700
@@ -8598,110 +8645,3 @@ Date:   Tue Mar 2 08:16:49 2004 +0000
 
  lib/Texture.cc | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit a058ae72068456f299978774e127b9f7996cecf0
-Author: bradleyhughes <bradleyhughes>
-Date:   Mon Mar 1 11:49:49 2004 +0000
-
-    Frame.Margin -> Toolbar.Margin
-
- src/BlackboxResource.cc | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 2d29bb9b7032e4f684b837711bb0e2f1159e3d78
-Author: bradleyhughes <bradleyhughes>
-Date:   Mon Mar 1 11:32:19 2004 +0000
-
-    refactor the toolbar style code... use bt::Rect where possible to save
-    having to recalculate the positions/sizes in lots of different places.
-
-    finish making Toolbar follow the styling pattern set by bt::Menu:
-
-    toolbar                         - the texture of the toolbar itself
-            .color
-            .colorTo
-            .borderWidth
-            .borderColor
-
-    toolbar.label                   - workspace label texture
-            .color
-            .colorTo
-            .borderWidth
-            .borderColor
-
-    toolbar.windowLabel             - window label texture
-            .color
-            .colorTo
-            .borderWidth
-            .borderColor
-
-    toolbar.clock                   - clock label texture
-            .color
-            .colorTo
-            .borderWidth
-            .borderColor
-
-    toolbar.button                  - button texture
-            .color
-            .colorTo
-            .borderWidth
-            .borderColor
-
-    toolbar.button.pressed          - pressed button texture
-            .color
-            .colorTo
-            .borderWidth
-            .borderColor
-
-    toolbar.label.textColor         - workspace label text color
-    toolbar.windowLabel.textColor   - window label text color
-    toolbar.clock.textClolor        - clock label text color
-
-    toolbar.alignment               - text alignment for all labels
-
-    toolbar.marginWidth             - space around and between buttons
-    and labels
-    toolbar.label.marginWidth       - space around text in labels
-    toolbar.button.marginWidth      - space around bitmaps in buttons
-
- src/BlackboxResource.cc | 127 +++++++++------
- src/BlackboxResource.hh |  21 ++-
- src/Toolbar.cc          | 368 +++++++++++++++++++++++---------------------
- src/Toolbar.hh          |  14 +-
- src/Window.hh           |   2 +-
- 5 files changed, 296 insertions(+), 236 deletions(-)
-
-commit 3961829dd7a8ee0c1659ec75dc0b6282b4697952
-Author: bradleyhughes <bradleyhughes>
-Date:   Mon Mar 1 10:51:24 2004 +0000
-
-    increase the default pixmap cache size to 2mb
-
- lib/PixmapCache.cc | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-commit 9adc4460c0fcfbc3516b19cd5797cf6fc4531d1b
-Author: bradleyhughes <bradleyhughes>
-Date:   Fri Feb 27 12:39:15 2004 +0000
-
-    if the clientList is empty, then the slit shouldn't exist
-    anymore... enforce this with a few asserts...
-
-    fix a free-memory-read in shutdown()... the while-loop checks for
-    clientList.isEmpty(), which is a problem when the last client is
-    removed (the slit is deleted, and clientList doesn't exist anymore).
-
- src/Slit.cc | 107 +++++++++++++++++++++++++++-----------------------------
- 1 file changed, 51 insertions(+), 56 deletions(-)
-
-commit b0805a968c96cc2cc24f40d10ef5820d65895279
-Author: bradleyhughes <bradleyhughes>
-Date:   Fri Feb 27 11:49:04 2004 +0000
-
-    make the slit stylable separately from the toolbar...
-
- src/BlackboxResource.cc |  14 +++++-
- src/BlackboxResource.hh |  11 +++++
- src/Slit.cc             | 104 ++++++++++++++++++--------------------------
- src/Slit.hh             |   5 ++-
- 4 files changed, 69 insertions(+), 65 deletions(-)

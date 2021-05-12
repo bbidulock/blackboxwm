@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.71])
-AC_INIT([blackbox],[0.76.3],[http://github.com/bbidulock/blackboxwm],[blackbox],[http://github.com/bbidulock/blackboxwm/issues])
-AC_REVISION([0.76.3])
+AC_INIT([blackbox],[0.77],[http://github.com/bbidulock/blackboxwm],[blackbox],[http://github.com/bbidulock/blackboxwm/issues])
+AC_REVISION([0.77])
 
 # set better defaults
 AC_PREFIX_DEFAULT([/usr])
@@ -20,17 +20,17 @@ AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_TARGET
 
-DATE='2020-05-08'
+DATE='2021-05-11'
 AC_SUBST([DATE])
 
-MDOCDATE='May 8, 2020'
+MDOCDATE='May 11, 2021'
 AC_SUBST([MDOCDATE])
 
-BRANCH='master'
+BRANCH='0.77'
 AC_SUBST([BRANCH])
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
+AM_INIT_AUTOMAKE([gnits 1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
 AM_MAINTAINER_MODE
 AM_SILENT_RULES([yes])
 

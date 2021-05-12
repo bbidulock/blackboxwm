@@ -1,4 +1,37 @@
-blackbox -- history of user-visible changes.  2020-02-11
+blackbox -- history of user-visible changes.  2021-05-11
+
+Release blackbox-0.77 released 2021-05-11
+-----------------------------------------
+
+git tag -n100 -l 0.77
+
+0.77            Maintenance Release 0.77
+
+    This is a maintenance release of the blackboxwm package. This package
+    contains a maintained fork of the original blackbox CVS that is on
+    Sourceforge. It includes all of the official blackbox CVS repository,
+    as well as patches collected from pdl-linux, Debian, the blackbox bug
+    list, other GitHub forks. It also includes greatly enhanced EWMH/ICCCM
+    compliance. See COMPLIANCE in the release for additional information on
+    enhanced compliance.
+
+    This release is a maintenance release whose purpose is to update the
+    build system for gcc 10.2 and autoconf 2.71. There are no outstanding
+    issues at the time of release.
+
+    Included in the release is an autoconf tarball for building the release
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.76...0.77
+
+Brian Bidulock <bidulock@openss7.org> (5):
+      post-release update
+      improvements to maintenance scripts
+      document compliance wider
+      update for autoconf 2.71
+      update release notes
+
 
 Release blackbox-0.76 released 2020-02-11
 -----------------------------------------
@@ -178,16 +211,4 @@ Brian Bidulock <bidulock@openss7.org> (5):
       applied workspace-label.patch from T2
       no force reconfigure
       update release and po files
-
-
-Release blackbox-0.71.1 released 2015-05-16
--------------------------------------------
-
-git shortlog -e -n -w80,6,8 0.71...0.71.1
-
-Brian Bidulock <bidulock@openss7.org> (4):
-      fix generation of libbt.pc pkg-config file
-      fix some focus issue
-      update release files
-      update po files
 
