@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: blackbox 0.70.2.28\n"
 "Report-Msgid-Bugs-To: http://github.com/bbidulock/blackboxwm\n"
 "POT-Creation-Date: 2023-05-03 14:13+0700\n"
-"PO-Revision-Date: 2014-08-29 13:17-0600\n"
-"Last-Translator: Brian F. G. Bidulock <bidulock@openss7.org>\n"
+"PO-Revision-Date: 2023-05-03 15:06+0700\n"
+"Last-Translator: Vadim Ushakov <wandrien.dev@gmail.com>\n"
 "Language-Team: Russian\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
@@ -17,6 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Poedit 3.2.2\n"
 
 #. TRANS The name of the submenu used for controlling slit options.
 #. TRANS The name of the submenu for controlling slit options.
@@ -143,7 +144,7 @@ msgstr "Показывать содержимое окон при перемещ
 #. TRANS When windows are resized they are resized opaquely (their contents show).
 #: src/Configmenu.cc:129
 msgid "Opaque Window Resizing"
-msgstr ""
+msgstr "Отображать содержимое окна при изменении размера"
 
 #. TRANS When window are maximized, they are maximized to the full screen size.
 #: src/Configmenu.cc:131
@@ -163,17 +164,17 @@ msgstr "Перемещать фокус при смене рабочего ст�
 #. TRANS The workspaces may be changed using the mouse wheel.
 #: src/Configmenu.cc:138
 msgid "Change Workspace with Mouse Wheel"
-msgstr ""
+msgstr "Переключать рабочие столы колесом мыши"
 
 #. TRANS The mouse wheel on the window title bar shades or unshades a window.
 #: src/Configmenu.cc:141
 msgid "Shade Windows with Mouse Wheel"
-msgstr ""
+msgstr "Сворачивать окно в заголовок колесом мыши"
 
 #. TRANS The toolbar responds to mouse wheel actions.
 #: src/Configmenu.cc:144
 msgid "Toolbar Actions with Mouse Wheel"
-msgstr ""
+msgstr "Управление тулбаром колесом мыши"
 
 #. TRANS Disable global key binding by setting the Scroll Lock key.
 #: src/Configmenu.cc:147
@@ -208,17 +209,17 @@ msgstr "Всплытие по щелчку"
 #. TRANS Arrange windows intelligently in rows.
 #: src/Configmenu.cc:293
 msgid "Smart Placement (Rows)"
-msgstr "\"Умное\" расположение (по горизонтали)"
+msgstr "Умное расположение (по горизонтали)"
 
 #. TRANS Arrange windows intelligently in columns.
 #: src/Configmenu.cc:295
 msgid "Smart Placement (Columns)"
-msgstr "\"Умное\" расположение (по вертикали)"
+msgstr "Умное расположение (по вертикали)"
 
 #. TRANS Center windows.
 #: src/Configmenu.cc:297
 msgid "Center Placement"
-msgstr ""
+msgstr "По центру"
 
 #. TRANS Arrange windows in a cascade.
 #: src/Configmenu.cc:299
@@ -248,7 +249,7 @@ msgstr "Снизу вверх"
 #. TRANS When arranging windows, ignore the presence of shaded windows.
 #: src/Configmenu.cc:315
 msgid "Ignore Shaded Windows"
-msgstr ""
+msgstr "Игнорировать свёрнутые в заголовок окна"
 
 #. TRANS Do not dither images.
 #: src/Configmenu.cc:390
@@ -275,7 +276,7 @@ msgstr "Свернутые окна"
 #. TRANS Whether to show the toolbar or not.
 #: src/Toolbarmenu.cc:65
 msgid "Enable Toolbar"
-msgstr ""
+msgstr "Отображать тулбар"
 
 #. TRANS Automatically hide the toolbar when the pointer leaves the toolbar.
 #: src/Toolbarmenu.cc:74
@@ -291,12 +292,12 @@ msgstr "Местоположение тулбара"
 #. TRANS Send the window to another workspace without changing workspaces.
 #: src/Windowmenu.cc:77
 msgid "Send to Workspace"
-msgstr "Отправить на ..."
+msgstr "Отправить на рабочий стол"
 
 #. TRANS Show the window on all workspaces.
 #: src/Windowmenu.cc:79
 msgid "Occupy all Workspaces"
-msgstr "Приклеить"
+msgstr "Прикрепить на все рабочие столы"
 
 #. TRANS Shade the window so that only the titlebar shows.
 #: src/Windowmenu.cc:82
@@ -316,27 +317,27 @@ msgstr "Максимизировать"
 #. TRANS Maximize the size of the window vertically.
 #: src/Windowmenu.cc:88
 msgid "Maximize Vert"
-msgstr ""
+msgstr "Максимизировать по вертикали"
 
 #. TRANS Maximize the size of the window horizontally.
 #: src/Windowmenu.cc:90
 msgid "Maximize Horz"
-msgstr ""
+msgstr "Максимизировать по горизонтали"
 
 #. TRANS Resize the window to cover the entire screen.
 #: src/Windowmenu.cc:93
 msgid "Full Screen"
-msgstr ""
+msgstr "На полный экран"
 
 #. TRANS Always place this window below other windows.
 #: src/Windowmenu.cc:98
 msgid "Always on bottom"
-msgstr ""
+msgstr "Всегда снизу"
 
 #. TRANS Kill the process associated with the window.
 #: src/Windowmenu.cc:101
 msgid "Kill Client"
-msgstr "Убить клиентское приложение"
+msgstr "Убить приложение"
 
 #. TRANS Ask the application owning the window to close it.
 #: src/Windowmenu.cc:103
@@ -356,7 +357,7 @@ msgstr "Новый рабочий стол"
 #. TRANS Remove the last workspace from the list of workspaces and destroy it.
 #: src/Workspacemenu.cc:56
 msgid "Remove Last Workspace"
-msgstr "Удалить последний"
+msgstr "Удалить последний рабочий стол"
 
 #: src/Screen.cc:168
 #, c-format
@@ -398,7 +399,7 @@ msgstr "Выход"
 #: src/Screen.cc:1635
 #, c-format
 msgid "%s: [exec] error, no menu label and/or command defined\n"
-msgstr "%s: ошибка [exec], не определено название пункта меню и/или комманда\n"
+msgstr "%s: ошибка [exec], не определено название пункта меню и/или команда\n"
 
 #: src/Screen.cc:1645
 #, c-format
@@ -412,10 +413,9 @@ msgstr ""
 "%s: ошибка [style], не определено название пункта меню и/или имя файла\n"
 
 #: src/Screen.cc:1669
-#, fuzzy, c-format
-#| msgid "%s: [config] error, no label defined"
+#, c-format
 msgid "%s: [config] error, no label defined\n"
-msgstr "%s: ошибка [config], не определено название пункта меню"
+msgstr "%s: ошибка [config], не определено название пункта меню\n"
 
 #: src/Screen.cc:1679
 #, c-format
@@ -475,7 +475,8 @@ msgstr "BlackboxWindow::BlackboxWindow(): создается 0x%lx\n"
 #, c-format
 msgid "BlackboxWindow::BlackboxWindow(): XGetWindowAttributes failed\n"
 msgstr ""
-"BlackboxWindow::BlackboxWindow(): ошибка процесса XGetWindowAttributres\n"
+"BlackboxWindow::BlackboxWindow(): не удалось выполнить "
+"XGetWindowAttributres\n"
 
 #: src/Window.cc:1308
 #, c-format
@@ -576,13 +577,13 @@ msgid ""
 "%s:  X error: %s(%d) opcodes %d/%d\n"
 "  resource 0x%lx\n"
 msgstr ""
-"%s:  ошибка X сервера: %s(%d) значения %d/%d\n"
-" ресурс 0x%lx\n"
+"%s:  ошибка X сервера: %s(%d) опкоды %d/%d\n"
+"  ресурс 0x%lx\n"
 
 #: lib/Application.cc:233
 #, c-format
 msgid "%s: caught unknown signal '%u', dumping core.\n"
-msgstr "%s: получен сигнал %u \n"
+msgstr "%s: получен неизвестный сигнал '%u', сбрасываю дамп памяти.\n"
 
 #: lib/Application.cc:508
 #, c-format
@@ -828,7 +829,7 @@ msgstr ""
 #: src/blackbox.cc:459
 #, c-format
 msgid "%s: no manageable screens found, exiting...\n"
-msgstr "%s: не найдено экранов для обслуживания, отмена...\n"
+msgstr "%s: не найдено экранов для обслуживания, выход...\n"
 
 #: src/main.cc:45 src/main.cc:105
 #, c-format
@@ -849,6 +850,7 @@ msgid ""
 "\n"
 msgstr ""
 "  -display <string>\t\tиспользовать заданный дисплей.\n"
+"  -single <string>\t\tуправлять только экраном по умолчанию\n"
 "  -rc <string>\t\t\tиспользовать альтернативный файл ресурсов.\n"
 "  -version\t\t\tвывести номер версии и выйти.\n"
 "  -help\t\t\t\tвывести эту подсказку и выйти.\n"
@@ -864,14 +866,20 @@ msgid ""
 "  XFT:\t\t\t\t%s\n"
 "\n"
 msgstr ""
+"Опции компиляции:\n"
+"  Debugging:\t\t\t%s\n"
+"  SHAPE:\t\t\t%s\n"
+"  MIT-SHM:\t\t\t%s\n"
+"  XFT:\t\t\t\t%s\n"
+"\n"
 
 #: src/main.cc:65 src/main.cc:71 src/main.cc:76 src/main.cc:81
 msgid "yes"
-msgstr "Да"
+msgstr "да"
 
 #: src/main.cc:67 src/main.cc:73 src/main.cc:78 src/main.cc:83
 msgid "no"
-msgstr "Нет"
+msgstr "нет"
 
 #: src/main.cc:115
 #, c-format
