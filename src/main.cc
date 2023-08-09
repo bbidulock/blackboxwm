@@ -49,7 +49,7 @@ static void showHelp(int exitval) {
 
   // print program usage and command line options
   printf(gettext("  -display <string>\t\tuse display connection.\n"
-         "  -single <string>\t\tmanage the default screen only\n"
+         "  -single <string>\t\tmanage the default screen only.\n"
          "  -rc <string>\t\t\tuse alternate resource file.\n"
          "  -version\t\t\tdisplay version and exit.\n"
          "  -help\t\t\t\tdisplay this help text and exit.\n\n"));
@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
       // look for alternative rc file to use
 
       if ((++i) >= argc) {
-        fprintf(stderr, gettext("error: '-rc' requires and argument\n"));
+        fprintf(stderr, gettext("error: '-rc' requires an argument\n"));
         ::exit(1);
       }
 
