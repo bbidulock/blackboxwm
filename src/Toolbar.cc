@@ -45,8 +45,8 @@ long nextTimeout(int resolution)
 {
   timeval now;
   gettimeofday(&now, 0);
-  return (std::max(1000l, ((((resolution - (now.tv_sec % resolution)) * 1000l))
-                           - (now.tv_usec / 1000l))));
+  return (std::max<long>(1000l, ((((resolution - (now.tv_sec % resolution)) * 1000l))
+                                - (now.tv_usec / 1000l))));
 }
 
 
